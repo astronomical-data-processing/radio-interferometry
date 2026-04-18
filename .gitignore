@@ -1,0 +1,76 @@
+# Data Directory
+data/fits/
+data/fundamentals_fits.tar.gz
+data/*.tgz
+data/notes
+data/practical/
+data/practical_data.tar.gz
+data/simulated_kat_7_vis/simulated_KAT-7_ms.tar.gz
+data/simulated_kat_7_vis/*.ms
+data/source/
+data/*.tgz
+data
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+.DS_Store
+nosetests.xml
+coverage.xml
+*,cover
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# python notebook checkpoints
+.ipynb_checkpoints
+boot.sh
+jupyter_notebook_config.py
+nohup.out

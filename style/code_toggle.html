@@ -1,0 +1,15 @@
+<script>
+    code_show=false; 
+    function code_toggle() {
+        if (code_show){
+            $('div.input').hide();
+        } else {
+            $('div.input').show();
+        }
+        code_show = !code_show
+    } 
+    $( document ).ready(code_toggle);
+</script>
+
+为便于阅读，本笔记本默认隐藏原始代码。若要显示或隐藏原始代码，请点击<a href="javascript:code_toggle()">这里</a>。
+
