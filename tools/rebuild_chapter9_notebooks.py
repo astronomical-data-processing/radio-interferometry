@@ -1475,20 +1475,21 @@ NOTEBOOKS = {
         code(IMPORT_BLOCK),
         md(
             r"""
-            ## 9.7 谱线数据处理：continuum subtraction、数据立方体与矩图
+            ## 9.7 谱线数据处理：从连续谱扣除到 PV 图和线宽诊断
 
             谱线实践和连续谱实践最根本的差别在于：我们不再只关心“总带宽里平均有多亮”，而要保留频率轴上的细结构，并把它解释成速度、柱密度和运动学信息。
 
-            一个最常见的基础流程通常包括：
+            一个更接近真实工作的基础流程通常包括：
 
-            - 先识别 line-free channels；
+            - 先识别 line-free channels，并决定连续谱应采用常数还是低阶基线模型；
             - 在频率轴上估计并去除连续谱；
             - 得到 line-only data cube；
             - 浏览 channel map；
-            - 用阈值 mask 构造 moment 0 / moment 1 图；
-            - 从积分谱线中估计系统速度与线宽。
+            - 用平滑辅助的 3D mask 构造 moment 0 / moment 1 图；
+            - 抽取 PV diagram；
+            - 从积分谱线中估计系统速度、`W20/W50` 和单高斯摘要量。
 
-            这一节用一个完全自包含的合成 H I 风格数据立方体演示整个过程。它并不替代真实的 `uvcontsub`、`tclean` cube mode 或 `immoments`，但足以把最核心的实践判断串起来。
+            这一节用一个完全自包含的合成 H I 风格数据立方体演示整个过程。它并不替代真实的 `uvcontsub`、`tclean` cube mode、`immoments` 或 `impv`，但会把谱线页从“最小原型”加厚到“更接近专业训练”的层次。
             """
         ),
         md("***"),
@@ -1520,6 +1521,94 @@ NOTEBOOKS = {
                 return np.real(np.fft.ifft2(image_ft * kernel_ft))
 
 
+            def robust_rms(values):
+                median = np.median(values)
+                return 1.4826 * np.median(np.abs(values - median))
+
+
+            def fit_linear_baseline(cube, velocity_axis, line_free_mask):
+                design = np.column_stack(
+                    [np.ones(line_free_mask.sum()), velocity_axis[line_free_mask]]
+                )
+                data = cube[line_free_mask].reshape(line_free_mask.sum(), -1)
+                coeff, _, _, _ = np.linalg.lstsq(design, data, rcond=None)
+                baseline = coeff[0][None, :] + velocity_axis[:, None] * coeff[1][None, :]
+                return baseline.reshape((velocity_axis.size, cube.shape[1], cube.shape[2]))
+
+
+            def spectral_smooth(cube):
+                padded = np.pad(cube, ((1, 1), (0, 0), (0, 0)), mode="edge")
+                return 0.25 * padded[:-2] + 0.5 * padded[1:-1] + 0.25 * padded[2:]
+
+
+            def linewidth_at_fraction(velocity_axis, spectrum, fraction):
+                positive = np.clip(spectrum, a_min=0.0, a_max=None)
+                peak_idx = int(np.argmax(positive))
+                peak = positive[peak_idx]
+                level = fraction * peak
+
+                left_candidates = np.where(positive[: peak_idx + 1] < level)[0]
+                if left_candidates.size == 0:
+                    v_left = velocity_axis[0]
+                else:
+                    i0 = left_candidates[-1]
+                    i1 = min(i0 + 1, peak_idx)
+                    if positive[i1] == positive[i0]:
+                        v_left = velocity_axis[i1]
+                    else:
+                        v_left = velocity_axis[i0] + (
+                            (level - positive[i0])
+                            * (velocity_axis[i1] - velocity_axis[i0])
+                            / (positive[i1] - positive[i0])
+                        )
+
+                right_candidates = np.where(positive[peak_idx:] < level)[0]
+                if right_candidates.size == 0:
+                    v_right = velocity_axis[-1]
+                else:
+                    i1 = peak_idx + right_candidates[0]
+                    i0 = max(peak_idx, i1 - 1)
+                    if positive[i1] == positive[i0]:
+                        v_right = velocity_axis[i0]
+                    else:
+                        v_right = velocity_axis[i0] + (
+                            (level - positive[i0])
+                            * (velocity_axis[i1] - velocity_axis[i0])
+                            / (positive[i1] - positive[i0])
+                        )
+
+                return v_right - v_left, 0.5 * (v_left + v_right), level
+
+
+            def fit_single_gaussian_grid(velocity_axis, spectrum, center_guess):
+                positive = np.clip(spectrum, a_min=0.0, a_max=None)
+                best = None
+
+                for center in np.linspace(center_guess - 18.0, center_guess + 18.0, 121):
+                    for sigma in np.linspace(4.0, 28.0, 90):
+                        basis = np.exp(-0.5 * ((velocity_axis - center) / sigma) ** 2)
+                        amplitude = np.dot(positive, basis) / np.dot(basis, basis)
+                        amplitude = max(amplitude, 0.0)
+                        model = amplitude * basis
+                        chi2 = np.mean((positive - model) ** 2)
+                        if best is None or chi2 < best[0]:
+                            best = (chi2, amplitude, center, sigma, model)
+
+                _, _, center_best, sigma_best, _ = best
+                for center in np.linspace(center_best - 4.0, center_best + 4.0, 121):
+                    for sigma in np.linspace(max(2.5, sigma_best - 4.0), sigma_best + 4.0, 121):
+                        basis = np.exp(-0.5 * ((velocity_axis - center) / sigma) ** 2)
+                        amplitude = np.dot(positive, basis) / np.dot(basis, basis)
+                        amplitude = max(amplitude, 0.0)
+                        model = amplitude * basis
+                        chi2 = np.mean((positive - model) ** 2)
+                        if chi2 < best[0]:
+                            best = (chi2, amplitude, center, sigma, model)
+
+                _, amplitude, center, sigma, model = best
+                return amplitude, center, sigma, model
+
+
             npix = 56
             cell_arcsec = 1.5
             coords = (np.arange(npix) - npix // 2) * cell_arcsec
@@ -1533,48 +1622,72 @@ NOTEBOOKS = {
             center = np.argmin(np.abs(coords - 0.0))
             continuum_map[center, center] += 0.36
             continuum_map += 0.14 * normalized_gaussian(x_grid, y_grid, 16.0, -12.0, 3.0, 2.5)
+            continuum_cube = continuum_map[None, :, :] * (1.0 + 0.0013 * vel_kms[:, None, None])
 
-            line_surface_brightness = (
-                0.95 * normalized_gaussian(x_grid, y_grid, 3.0, -2.0, 8.0, 5.0)
-                + 0.28 * normalized_gaussian(x_grid, y_grid, -10.0, 8.0, 4.0, 3.0)
-            )
+            disk_surface = 0.95 * normalized_gaussian(x_grid, y_grid, 3.0, -2.0, 8.0, 5.0)
+            cloud_surface = 0.22 * normalized_gaussian(x_grid, y_grid, -11.0, 9.0, 3.8, 2.8)
             velocity_field = 8.0 + 1.8 * x_grid
+            cloud_velocity = 28.0 + 0.6 * x_grid
             sigma_v = 7.0
 
             line_cube = np.zeros((vel_kms.size, npix, npix))
             for ci, vel in enumerate(vel_kms):
-                line_cube[ci] = line_surface_brightness * np.exp(
+                disk_component = disk_surface * np.exp(
                     -0.5 * ((vel - velocity_field) / sigma_v) ** 2
                 )
+                cloud_component = cloud_surface * np.exp(
+                    -0.5 * ((vel - cloud_velocity) / 4.5) ** 2
+                )
+                line_cube[ci] = disk_component + cloud_component
 
             beam = make_beam(npix=npix, sigma_pix=1.7)
             beam_area_pix = beam.sum()
 
             restored_cube = np.zeros_like(line_cube)
             for ci in range(vel_kms.size):
-                restored_cube[ci] = fft_convolve_same(continuum_map + line_cube[ci], beam)
+                restored_cube[ci] = fft_convolve_same(continuum_cube[ci] + line_cube[ci], beam)
 
             restored_cube += 0.0035 * RNG.normal(size=restored_cube.shape)
 
-            line_free = np.abs(vel_kms) > 45.0
-            continuum_est = restored_cube[line_free].mean(axis=0)
-            cube_sub = restored_cube - continuum_est[None, :, :]
-
-            noise_rms = 1.4826 * np.median(
-                np.abs(cube_sub[line_free] - np.median(cube_sub[line_free]))
+            line_free_conservative = np.abs(vel_kms) > 48.0
+            line_free_loose = np.abs(vel_kms) > 24.0
+            continuum_mean_loose = restored_cube[line_free_loose].mean(axis=0)
+            continuum_mean_conservative = restored_cube[line_free_conservative].mean(axis=0)
+            continuum_linear = fit_linear_baseline(
+                restored_cube, vel_kms, line_free_conservative
             )
-            source_aperture = ((x_grid - 3.0) ** 2 + (y_grid + 2.0) ** 2) < 14.0**2
+
+            cube_sub_loose = restored_cube - continuum_mean_loose[None, :, :]
+            cube_sub_mean = restored_cube - continuum_mean_conservative[None, :, :]
+            cube_sub = restored_cube - continuum_linear
+
+            noise_rms = robust_rms(cube_sub[line_free_conservative])
+            source_aperture = (
+                (x_grid - 2.0) ** 2 / 18.0**2 + (y_grid + 1.0) ** 2 / 13.0**2
+            ) < 1.0
+            background_aperture = ((x_grid + 20.0) ** 2 + (y_grid - 18.0) ** 2) < 7.5**2
             spectrum_raw = restored_cube[:, source_aperture].sum(axis=1) / beam_area_pix
+            spectrum_loose = cube_sub_loose[:, source_aperture].sum(axis=1) / beam_area_pix
+            spectrum_mean = cube_sub_mean[:, source_aperture].sum(axis=1) / beam_area_pix
             spectrum_line = cube_sub[:, source_aperture].sum(axis=1) / beam_area_pix
             """
         ),
         md(
             r"""
-            ### 9.7.1 先识别 line-free channels，再做连续谱扣除
+            ### 9.7.1 先定义 line-free channels，再决定基线模型
 
-            谱线处理里最容易犯的一个错误，是没有先想清楚哪些通道可以视为“只有连续谱，没有谱线”。若 line-free channels 选错，continuum subtraction 本身就会把谱线结构吃掉或扭曲。
+            谱线处理里最容易犯的两个错误是：
 
-            下面先看积分谱，再看基于 line-free channels 的简单连续谱估计。这里采用的是最简单的频率均值法；真实处理里更常见的是在可见度域做 `uvcontsub`，并允许低阶多项式拟合。
+            - 没有先想清楚哪些通道可以视为“只有连续谱，没有谱线”；
+            - 明明频谱基线存在斜率，却仍然只用常数平均去扣除连续谱。
+
+            下面先看积分谱，再比较三种连续谱扣除策略：
+
+            - 过于激进的 line-free 选择加上均值法；
+            - 保守 line-free 选择加上均值法；
+            - 保守 line-free 选择加上线性基线拟合。
+
+            真实处理里更常见的是在可见度域做 `uvcontsub`，并允许低阶多项式拟合。这里的目的，是让你看清楚“通道选择”和“基线模型”是两个独立判断。
             """
         ),
         code(
@@ -1582,28 +1695,44 @@ NOTEBOOKS = {
             fig, axes = plt.subplots(1, 2, figsize=(11, 4.2))
 
             axes[0].plot(vel_kms, spectrum_raw, color="tab:purple", lw=2.0, label="raw spectrum")
-            axes[0].axvspan(vel_kms[~line_free][0], vel_kms[~line_free][-1], color="tab:orange", alpha=0.18, label="line channels")
+            axes[0].axvspan(-48.0, 48.0, color="tab:orange", alpha=0.16, label="conservative line window")
+            axes[0].axvspan(-48.0, -24.0, color="tab:red", alpha=0.12, label="risky wing channels if chosen as line-free")
+            axes[0].axvspan(24.0, 48.0, color="tab:red", alpha=0.12)
             axes[0].set_xlabel("velocity [km/s]")
             axes[0].set_ylabel("integrated flux density [Jy]")
-            axes[0].set_title("Integrated spectrum before continuum subtraction")
+            axes[0].set_title("Inspect the global spectrum before subtraction")
             axes[0].legend(loc="upper right")
 
-            axes[1].plot(vel_kms, spectrum_raw, color="tab:gray", lw=1.6, label="raw")
-            axes[1].plot(vel_kms, spectrum_line, color="tab:blue", lw=2.0, label="continuum-subtracted")
+            axes[1].plot(vel_kms, spectrum_raw, color="tab:gray", lw=1.4, label="raw")
+            axes[1].plot(vel_kms, spectrum_loose, color="tab:red", lw=1.5, label="mean subtraction, loose line-free")
+            axes[1].plot(vel_kms, spectrum_mean, color="tab:orange", lw=1.6, label="mean subtraction, conservative line-free")
+            axes[1].plot(vel_kms, spectrum_line, color="tab:blue", lw=2.0, label="linear baseline, conservative line-free")
             axes[1].axhline(0.0, color="black", ls="--")
             axes[1].set_xlabel("velocity [km/s]")
             axes[1].set_ylabel("integrated flux density [Jy]")
-            axes[1].set_title("Continuum subtraction reveals the line profile")
+            axes[1].set_title("Line-free choice and baseline model both matter")
             axes[1].legend(loc="upper right")
 
             plt.tight_layout()
-            print(f"line-free 通道数 = {line_free.sum()} / {vel_kms.size}")
+            print(f"保守 line-free 通道数 = {line_free_conservative.sum()} / {vel_kms.size}")
+            print(f"激进 line-free 通道数 = {line_free_loose.sum()} / {vel_kms.size}")
+            print(
+                "线外中位残差 [Jy]："
+                f" 激进均值法 = {np.median(spectrum_loose[line_free_conservative]):+.4f},"
+                f" 保守均值法 = {np.median(spectrum_mean[line_free_conservative]):+.4f},"
+                f" 线性基线 = {np.median(spectrum_line[line_free_conservative]):+.4f}"
+            )
             print(f"continuum-subtracted cube 的噪声 RMS ≈ {noise_rms:.4f} Jy/beam")
             """
         ),
         md(
             r"""
-            这一步之后，数据结构才真正变成了“谱线数据立方体”。此时后续所有 channel map、矩图和线宽测量，都应基于 continuum-subtracted cube，而不是原始含连续谱的数据。
+            从这个对比可以看到两件事：
+
+            - 若把线翼误划进 line-free channels，谱线本身会被过度扣除；
+            - 即使通道选得对，若基线存在频谱斜率，常数均值法仍会留下系统残差。
+
+            下面的后续步骤都采用“保守 line-free + 线性基线模型”得到的 `cube_sub`。这一步之后，数据结构才真正变成了可用于谱线分析的 line-only data cube。
             """
         ),
         md(
@@ -1615,7 +1744,7 @@ NOTEBOOKS = {
         ),
         code(
             """
-            channel_targets = [-40.0, -10.0, 20.0, 50.0]
+            channel_targets = [-35.0, -5.0, 20.0, 45.0]
             channel_indices = [np.argmin(np.abs(vel_kms - target)) for target in channel_targets]
 
             fig, axes = plt.subplots(2, 2, figsize=(10, 9))
@@ -1638,43 +1767,90 @@ NOTEBOOKS = {
         ),
         md(
             r"""
-            这些切片能直接回答一个很重要的问题：发射在不同速度通道上是否沿空间方向系统移动。若答案是肯定的，那么 moment 1 图通常就会呈现出清晰的速度梯度。
+            这些切片能直接回答一个很重要的问题：发射在不同速度通道上是否沿空间方向系统移动。若答案是肯定的，那么 moment 1 图和 PV 图通常都会呈现出清晰的速度梯度。
             """
         ),
         md(
             r"""
-            ### 9.7.3 用阈值 mask 构造 moment 0 与 moment 1 图
+            ### 9.7.3 用平滑辅助的 3D mask 构造 moment 0 与 moment 1 图
 
-            若不加筛选就直接对整立方体积分，噪声会严重污染矩图。因此实践里一般会先构造一个 mask，只保留显著探测到发射的像素。
+            若不加筛选就直接对整立方体积分，噪声会严重污染矩图。因此实践里一般会先构造一个 mask，只保留显著探测到发射的体素。
 
-            这里使用一个最简单的 3-sigma 阈值 mask。真实数据处理中，也常会结合空间平滑、频率平滑或源寻找结果来构造更稳健的掩膜。
+            这里采用一个更接近真实工作的简化版思路：
+
+            - 先对 cube 做空间与频率平滑；
+            - 在平滑 cube 上找 2.2-sigma 的种子；
+            - 要求至少出现在相邻通道中，避免单通道噪声峰；
+            - 再回到原始 cube，用较低阈值扩展成最终 mask。
+
+            这已经是一个简化版的 `moment masking` 思想，比“直接 3-sigma 硬阈值”更稳健，也更接近专业工作流。
             """
         ),
         code(
             """
-            mask = cube_sub > (3.0 * noise_rms)
-            masked_cube = np.where(mask, cube_sub, 0.0)
+            smoothing_beam = make_beam(npix=npix, sigma_pix=2.6)
+            smooth_cube = np.zeros_like(cube_sub)
+            for ci in range(vel_kms.size):
+                smooth_cube[ci] = fft_convolve_same(cube_sub[ci], smoothing_beam)
+            smooth_cube = spectral_smooth(smooth_cube)
 
-            moment0 = masked_cube.sum(axis=0) * dv
-            weight_sum = masked_cube.sum(axis=0)
-            weighted_velocity = (masked_cube * vel_kms[:, None, None]).sum(axis=0)
+            smoothed_rms = robust_rms(smooth_cube[line_free_conservative])
+            seed_mask = smooth_cube > (2.2 * smoothed_rms)
+            neighbor_count = seed_mask.astype(int)
+            neighbor_count[1:] += seed_mask[:-1]
+            neighbor_count[:-1] += seed_mask[1:]
+            spectral_support = neighbor_count >= 2
+            mask = spectral_support & (cube_sub > (1.2 * noise_rms))
+
+            positive_cube = np.clip(cube_sub, a_min=0.0, a_max=None)
+            masked_positive_cube = np.where(mask, positive_cube, 0.0)
+            moment0_raw = positive_cube.sum(axis=0) * dv
+            moment0 = masked_positive_cube.sum(axis=0) * dv
+            weight_sum = masked_positive_cube.sum(axis=0)
+            weighted_velocity = (masked_positive_cube * vel_kms[:, None, None]).sum(axis=0)
             moment1 = np.full_like(weight_sum, np.nan, dtype=float)
             np.divide(weighted_velocity, weight_sum, out=moment1, where=weight_sum > 0.0)
+            mask_coverage = mask.sum(axis=0)
 
-            fig, axes = plt.subplots(1, 2, figsize=(11, 4.4))
+            raw_background_bias = moment0_raw[background_aperture].mean()
+            masked_background_bias = moment0[background_aperture].mean()
 
-            im0 = axes[0].imshow(
+            fig, axes = plt.subplots(2, 2, figsize=(11, 8.6))
+
+            im_mask = axes[0, 0].imshow(
+                mask_coverage,
+                origin="lower",
+                extent=[coords[0], coords[-1], coords[0], coords[-1]],
+                cmap="viridis",
+            )
+            axes[0, 0].set_title("Mask coverage: detected channels per pixel")
+            axes[0, 0].set_xlabel("RA offset [arcsec]")
+            axes[0, 0].set_ylabel("Dec offset [arcsec]")
+            plt.colorbar(im_mask, ax=axes[0, 0], shrink=0.82, label="channels")
+
+            im0_raw = axes[0, 1].imshow(
+                moment0_raw,
+                origin="lower",
+                extent=[coords[0], coords[-1], coords[0], coords[-1]],
+                cmap="magma",
+            )
+            axes[0, 1].set_title("Moment 0 without masking")
+            axes[0, 1].set_xlabel("RA offset [arcsec]")
+            axes[0, 1].set_ylabel("Dec offset [arcsec]")
+            plt.colorbar(im0_raw, ax=axes[0, 1], shrink=0.82, label="Jy km/s / beam")
+
+            im0 = axes[1, 0].imshow(
                 moment0,
                 origin="lower",
                 extent=[coords[0], coords[-1], coords[0], coords[-1]],
                 cmap="magma",
             )
-            axes[0].set_title("Moment 0: integrated line intensity")
-            axes[0].set_xlabel("RA offset [arcsec]")
-            axes[0].set_ylabel("Dec offset [arcsec]")
-            plt.colorbar(im0, ax=axes[0], shrink=0.82, label="Jy km/s / beam")
+            axes[1, 0].set_title("Moment 0 with smoothed 3D mask")
+            axes[1, 0].set_xlabel("RA offset [arcsec]")
+            axes[1, 0].set_ylabel("Dec offset [arcsec]")
+            plt.colorbar(im0, ax=axes[1, 0], shrink=0.82, label="Jy km/s / beam")
 
-            im1 = axes[1].imshow(
+            im1 = axes[1, 1].imshow(
                 moment1,
                 origin="lower",
                 extent=[coords[0], coords[-1], coords[0], coords[-1]],
@@ -1682,29 +1858,86 @@ NOTEBOOKS = {
                 vmin=np.nanpercentile(moment1, 5),
                 vmax=np.nanpercentile(moment1, 95),
             )
-            axes[1].set_title("Moment 1: intensity-weighted velocity")
-            axes[1].set_xlabel("RA offset [arcsec]")
-            axes[1].set_ylabel("Dec offset [arcsec]")
-            plt.colorbar(im1, ax=axes[1], shrink=0.82, label="km/s")
+            axes[1, 1].set_title("Moment 1 from masked cube")
+            axes[1, 1].set_xlabel("RA offset [arcsec]")
+            axes[1, 1].set_ylabel("Dec offset [arcsec]")
+            plt.colorbar(im1, ax=axes[1, 1], shrink=0.82, label="km/s")
 
+            plt.tight_layout()
+            print(f"平滑后 cube 的 RMS ≈ {smoothed_rms:.4f} Jy/beam")
+            print(f"进入最终 mask 的体素数 = {mask.sum()}")
+            print(
+                "背景区域 moment0 平均偏差 [Jy km/s/beam]："
+                f" 未掩膜 = {raw_background_bias:+.4f},"
+                f" 掩膜后 = {masked_background_bias:+.4f}"
+            )
+            """
+        ),
+        md(
+            r"""
+            这里最值得注意的并不是“我们画出了两张矩图”，而是：**构造掩膜本身已经是谱线分析的一部分。** 未掩膜的 moment 0 图会在空白区域积累正噪声偏差，而平滑辅助的 3D mask 能明显压低这种偏差。
+            """
+        ),
+        md(
+            r"""
+            ### 9.7.4 沿主轴抽取一个 PV diagram
+
+            对旋转盘、外流、双峰结构或速度梯度而言，仅靠 channel map 和 moment 1 往往还不够。一个非常经典、也非常有解释力的诊断量，就是位置-速度图（PV diagram）。
+
+            这里沿主轴方向抽取一条有有限宽度的切片。若存在系统性的速度梯度，PV 图通常会呈现出倾斜的脊线。
+            """
+        ),
+        code(
+            """
+            slit_center_dec = -1.5
+            slit_halfwidth = 3.0
+            row_select = np.abs(coords - slit_center_dec) <= slit_halfwidth
+            pv_slice = cube_sub[:, row_select, :].mean(axis=1)
+            pv_mask = mask[:, row_select, :].any(axis=1).astype(float)
+
+            fig, ax = plt.subplots(figsize=(9.0, 5.0))
+            im = ax.imshow(
+                pv_slice,
+                origin="lower",
+                aspect="auto",
+                extent=[coords[0], coords[-1], vel_kms[0], vel_kms[-1]],
+                cmap="cividis",
+                vmin=-2.0 * noise_rms,
+                vmax=np.max(pv_slice) * 0.95,
+            )
+            ax.contour(
+                coords,
+                vel_kms,
+                pv_mask,
+                levels=[0.5],
+                colors="white",
+                linewidths=1.0,
+            )
+            ax.axhline(0.0, color="white", ls="--", lw=0.9, alpha=0.7)
+            ax.set_xlabel("major-axis offset [arcsec]")
+            ax.set_ylabel("velocity [km/s]")
+            ax.set_title("PV diagram extracted along the major axis")
+            plt.colorbar(im, ax=ax, shrink=0.86, label="Jy/beam")
             plt.tight_layout()
             """
         ),
         md(
             r"""
-            这里的 moment 0 图近似对应积分强度图，而 moment 1 图则给出了速度场的最基础入口。和第 1.7 节讨论的一样，真正值得关注的不是“有一条线”，而是这条线如何把空间结构和运动学结构耦合起来。
+            和 moment 1 相比，PV 图往往更容易让你判断：速度梯度是不是单调的、有没有离散云团、是否存在和主盘不同的附加运动学成分。
             """
         ),
         md(
             r"""
-            ### 9.7.4 做一个基础谱线测量：系统速度与等效线宽
+            ### 9.7.5 做一个更完整的基础谱线测量：`W20/W50` 与单高斯摘要
 
-            下面基于 aperture 内的积分谱线，估计两个最常见的量：
+            下面基于 aperture 内的积分谱线，估计几类最常见的量：
 
             - **系统速度**：谱线强度加权的平均速度；
-            - **等效 FWHM**：把谱线二阶矩换算成一个高斯等效线宽。
+            - **等效 FWHM**：由二阶矩换算出的高斯等效线宽；
+            - **`W50` / `W20`**：在峰值 50% 和 20% 处测得的轮廓宽度；
+            - **单高斯摘要**：用一个单峰高斯给出紧凑的中心和宽度摘要。
 
-            这些量并不替代完整的线型拟合，但已经足以说明“谱线不仅有强度，还有速度信息和宽度信息”。
+            这里特别保留 `W20/W50`，是因为很多真实全局 H I 轮廓并不接近单高斯，强行只报一个“高斯 FWHM”会把重要形状信息抹掉。
             """
         ),
         code(
@@ -1713,10 +1946,19 @@ NOTEBOOKS = {
             systemic_velocity = np.sum(vel_kms * positive_spec) / np.sum(positive_spec)
             sigma_line = np.sqrt(np.sum(positive_spec * (vel_kms - systemic_velocity) ** 2) / np.sum(positive_spec))
             fwhm_equiv = 2.355 * sigma_line
+            w50, v50_center, level50 = linewidth_at_fraction(vel_kms, positive_spec, 0.50)
+            w20, v20_center, level20 = linewidth_at_fraction(vel_kms, positive_spec, 0.20)
+            gauss_amp, gauss_center, gauss_sigma, gauss_model = fit_single_gaussian_grid(
+                vel_kms, positive_spec, center_guess=systemic_velocity
+            )
+            gauss_fwhm = 2.355 * gauss_sigma
             integrated_flux = np.sum(positive_spec) * dv
 
             fig, ax = plt.subplots(figsize=(8.0, 4.0))
             ax.plot(vel_kms, spectrum_line, color="tab:blue", lw=2.0)
+            ax.plot(vel_kms, gauss_model, color="tab:orange", lw=1.8, label="single-Gaussian summary")
+            ax.axhline(level50, color="tab:green", ls="--", lw=1.0, label=f"W50 = {w50:.1f} km/s")
+            ax.axhline(level20, color="tab:red", ls=":", lw=1.0, label=f"W20 = {w20:.1f} km/s")
             ax.axvline(systemic_velocity, color="black", ls="--", label=f"v_sys = {systemic_velocity:.1f} km/s")
             ax.set_xlabel("velocity [km/s]")
             ax.set_ylabel("integrated flux density [Jy]")
@@ -1726,22 +1968,35 @@ NOTEBOOKS = {
 
             print(f"系统速度 ≈ {systemic_velocity:.2f} km/s")
             print(f"高斯等效 FWHM ≈ {fwhm_equiv:.2f} km/s")
+            print(f"W50 ≈ {w50:.2f} km/s，中心速度 ≈ {v50_center:.2f} km/s")
+            print(f"W20 ≈ {w20:.2f} km/s，中心速度 ≈ {v20_center:.2f} km/s")
+            print(f"单高斯摘要中心 ≈ {gauss_center:.2f} km/s，FWHM ≈ {gauss_fwhm:.2f} km/s")
             print(f"积分线通量 ≈ {integrated_flux:.2f} Jy km/s")
             """
         ),
         md(
             r"""
-            ### 9.7.5 与真实软件流程的对应
+            这一组量的用途并不完全相同：
+
+            - 二阶矩和单高斯摘要适合快速压缩成“一个中心、一个宽度”；
+            - `W50/W20` 更接近传统全局轮廓测量，尤其适用于非高斯、双峰或带肩部结构的谱线；
+            - 若线型明显复杂，下一步通常不应停在摘要量，而要继续做多分量拟合或运动学建模。
+            """
+        ),
+        md(
+            r"""
+            ### 9.7.6 与真实软件流程的对应
 
             若把这个练习映射到真实软件环境，最常见的谱线处理链大致是：
 
             - `plotms` / `plotbandpass`：先确认 bandpass 与 line-free channels；
-            - `uvcontsub`：在可见度域做连续谱扣除；
+            - `uvcontsub`：在可见度域做连续谱扣除，必要时加入低阶多项式；
             - `tclean`（cube mode）：逐通道成像得到 data cube；
-            - `immoments`：构造矩图；
+            - `immoments` 或更稳健的外部工具：在 mask 基础上构造矩图；
+            - `impv` 或自定义切片：抽取 PV diagram；
             - `specfit` 或自定义测量：估计速度、线宽和积分通量。
 
-            这里最重要的专业判断是：**谱线处理不只是“连续谱成像再多一维”。** 它需要更谨慎的频谱基线处理、更明确的 line-free 选择，以及对矩图噪声偏差的持续警惕。
+            这里最重要的专业判断是：**谱线处理不只是“连续谱成像再多一维”。** 它需要更谨慎的频谱基线处理、更明确的 line-free 选择、更有意识的掩膜构造，以及把空间结构和速度结构一起读出来的习惯。
             """
         ),
     ],
@@ -1772,7 +2027,7 @@ NOTEBOOKS = {
             - 自校准；
             - 图像质量评估；
             - 平均与展宽的工程约束。
-            - 基础谱线处理：continuum subtraction、channel map、moment map 与线宽测量。
+            - 基础谱线处理：line-free 选择、continuum subtraction、channel map、平滑辅助 masking、PV 图与 `W20/W50` 线宽诊断。
 
             但如果要进一步对齐现代国际训练体系，后续最值得继续扩展的方向仍然包括：
 
@@ -1802,7 +2057,7 @@ NOTEBOOKS = {
 
             若继续扩展第 9 章，建议优先顺序仍然是：
 
-            1. 谱线处理的加厚版：更真实的 continuum subtraction、cube masking 与线型拟合；
+            1. 谱线处理的再加厚版：更真实的 uv-domain continuum subtraction、3D masking、PV 解读与多分量线型拟合；
             2. 宽场/宽带高级成像；
             3. 偏振成像与偏振校准；
             4. 短间距与单碟联合成像；
