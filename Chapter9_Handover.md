@@ -24,6 +24,7 @@
 - 图像质量评估与基本测量；
 - averaging 与 smearing 的工程约束。
 - 一条可运行且更接近真实工作的谱线处理链：line-free 通道选择、`uv-domain` 基线拟合概念实验、channel map、平滑辅助 masking、PV 图、`W20/W50`、双分量近似与 H I 物理量入口。
+- 一条更高级的谱线分析入口：`3D mask`、source finding、组件目录、主盘/云团分离、`PV ridge` 与简化旋转曲线拟合。
 - 一条宽带/宽场高级成像入口：MFS 思路、频谱指数恢复、主波束校正与噪声放大权衡。
 - 一条偏振成像入口：Stokes `I/Q/U/V`、偏振强度 debias、leakage / `D-term` 概念与最小 `RM` 拟合。
 - 一条短间距与联合成像入口：missing flux、negative bowl、单碟互补与 feather 权衡。
@@ -47,6 +48,7 @@
 - `9_Practical/9_10_short_spacing_and_feather.ipynb`
 - `9_Practical/9_11_polarization_calibration_and_rm_synthesis.ipynb`
 - `9_Practical/9_12_direction_dependent_widefield_imaging.ipynb`
+- `9_Practical/9_13_advanced_spectral_line_analysis.ipynb`
 - `9_Practical/9_x_further_reading_and_workflow.ipynb`
 
 同时保留并改写了兼容入口：
@@ -58,7 +60,7 @@
 
 - `tools/rebuild_chapter9_notebooks.py`
 
-当前上述 notebook 已顺序执行验证，状态为可运行；`9.7` 中先前 moment1 计算触发的运行期 warning 也已消除。
+当前上述 notebook 已顺序执行验证，状态为可运行；本轮新增的 `9.13` 也已单独执行并纳入整章 `9_Practical` 全量复检；`9.7` 中先前 moment1 计算触发的运行期 warning 也已消除。
 
 
 ## 已完成的结构升级
@@ -72,6 +74,7 @@
 - `9.5` 增加了背景噪声、动态范围、beam-aware 通量测量等基础 QA 动作；
 - `9.6` 把 smearing 与 averaging 参数选择联系起来，不再只是静态公式说明；
 - `9.7` 已从“最小谱线原型”加厚为更完整的训练页，加入了 line-free 选择对比、`uv-domain` 基线拟合概念实验、平滑辅助 mask、PV 图、`W20/W50`、双分量近似，以及柱密度和 H I 质量的入门换算；
+- `9.13` 已建立第一版高级谱线分析实践，把 `3D mask`、source finding、组件目录、主盘/云团分离、`PV ridge` 与简化旋转曲线拟合联系起来；
 - `9.8` 已建立第一版宽带/宽场高级成像实践，把 MFS、主波束频率依赖、频谱指数偏差和 PB 校正噪声放大联系起来；
 - `9.9` 已建立第一版偏振实践，把 Stokes `I/Q/U/V`、偏振强度 debias、leakage / `D-term` 与 `RM` 拟合联系起来；
 - `9.10` 已建立第一版短间距实践，把 missing flux、negative bowl、单碟互补和 feather 组合联系起来；
@@ -85,14 +88,14 @@
 
 第 9 章目前已经完成了连续谱基础主线，但离路线图中的完整实践体系仍有明显扩展空间。
 
-### 1. 谱线处理已经起步，但还需要加厚
+### 1. 谱线处理已经进入第二层，但还需要继续做深
 
-当前 `9.7` 已经不再只是最小工作流，而是覆盖了 line-free 选择、基线模型、mask、PV、多分量近似和基础物理量换算的综合练习。但若要达到成熟训练教程的深度，后续仍建议继续补强：
+当前 `9.7` 和 `9.13` 已经把谱线训练链推进到了“基础处理 + 高级分析入口”这两层：前者覆盖 line-free 选择、基线模型、mask、PV、多分量近似和基础物理量换算，后者补上了 `3D mask`、source finding、组件目录和简化运动学拟合。但若要达到成熟训练教程的深度，后续仍建议继续补强：
 
 - 更真实的 uv-domain continuum subtraction 场景，例如多基线、多场或频变连续谱；
-- 更系统的 3D mask 与 source finding 接口；
+- 更真实的谱线 3D 前向建模，例如 tilted-ring、厚盘、外流或非圆周运动模型；
 - 更完整的线型拟合与多分量情形，例如联合拟合、模型比较或不确定度传播；
-- PV 图和旋转曲线、外流或非圆周运动之间的联系；
+- PV 图、旋转曲线和 beam smearing 修正之间的联系；
 - 与物理量估计的进一步连接，例如总气体质量、旋转质量和距离误差的系统影响。
 
 ### 2. 偏振实践已经进入第 9 章，但还可以继续做深
@@ -139,7 +142,7 @@
 
 若继续扩展第 9 章，建议按下面顺序推进：
 
-1. 继续加厚现有谱线处理 notebook
+1. 继续加厚高级谱线建模与物理量估计
 2. 继续加深联合成像与多阵列整合
 3. 继续加深偏振校准链与 Faraday 建模
 4. 继续加深宽场方向相关与 mosaic 联合成像
