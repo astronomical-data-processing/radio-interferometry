@@ -1485,9 +1485,11 @@ NOTEBOOKS = {
             - 在频率轴上估计并去除连续谱；
             - 得到 line-only data cube；
             - 浏览 channel map；
+            - 用一个代表性 visibility spectrum 解释为什么真实流程更偏向 `uv-domain continuum subtraction`；
             - 用平滑辅助的 3D mask 构造 moment 0 / moment 1 图；
             - 抽取 PV diagram；
-            - 从积分谱线中估计系统速度、`W20/W50` 和单高斯摘要量。
+            - 从积分谱线中估计系统速度、`W20/W50` 和单高斯摘要量；
+            - 在必要时升级到双分量近似，并把线通量连回柱密度与总 H I 质量。
 
             这一节用一个完全自包含的合成 H I 风格数据立方体演示整个过程。它并不替代真实的 `uvcontsub`、`tclean` cube mode、`immoments` 或 `impv`，但会把谱线页从“最小原型”加厚到“更接近专业训练”的层次。
             """
@@ -1737,7 +1739,83 @@ NOTEBOOKS = {
         ),
         md(
             r"""
-            ### 9.7.2 浏览 channel map：谱线不是一张图，而是一组随速度变化的切片
+            ### 9.7.2 一个紧凑的 `uv-domain continuum subtraction` 概念实验
+
+            真实工作里更偏向在可见度域做连续谱扣除，不只是因为软件历史，而是因为每条基线、每个相关乘积都可以在成像之前独立处理频谱基线，从而避免把 **beam、deconvolution 和频谱拟合误差** 混在一起。
+
+            下面用一个代表性的复可见度频谱做一个最小实验：分别对实部和虚部在线外通道上拟合线性基线，再看扣除后的残差。这和真实 `uvcontsub` 当然还不是一回事，但思路是一致的。
+            """
+        ),
+        code(
+            """
+            vis_amp_cont = 1.45 + 0.0010 * vel_kms
+            vis_phase_cont = 0.22 + 0.0009 * vel_kms
+            vis_cont = vis_amp_cont * np.exp(1j * vis_phase_cont)
+
+            vis_line = 0.42 * np.exp(-0.5 * ((vel_kms - 12.0) / 8.0) ** 2) * np.exp(
+                1j * (0.75 + 0.009 * vel_kms)
+            )
+            vis_line += 0.12 * np.exp(-0.5 * ((vel_kms - 33.0) / 4.2) ** 2) * np.exp(
+                1j * (-0.35 + 0.004 * vel_kms)
+            )
+            vis_raw = vis_cont + vis_line + 0.015 * (
+                RNG.normal(size=vel_kms.size) + 1j * RNG.normal(size=vel_kms.size)
+            )
+
+            coeff_real = np.polyfit(
+                vel_kms[line_free_conservative], vis_raw.real[line_free_conservative], 1
+            )
+            coeff_imag = np.polyfit(
+                vel_kms[line_free_conservative], vis_raw.imag[line_free_conservative], 1
+            )
+            vis_model = np.polyval(coeff_real, vel_kms) + 1j * np.polyval(coeff_imag, vel_kms)
+            vis_resid = vis_raw - vis_model
+
+            fig, axes = plt.subplots(1, 3, figsize=(13.5, 3.9))
+
+            axes[0].plot(vel_kms, vis_raw.real, color="tab:blue", lw=1.8, label="raw real")
+            axes[0].plot(vel_kms, vis_model.real, color="black", ls="--", lw=1.2, label="fitted baseline")
+            axes[0].set_xlabel("velocity [km/s]")
+            axes[0].set_ylabel("real visibility [Jy]")
+            axes[0].set_title("Real part")
+            axes[0].legend(loc="upper right")
+
+            axes[1].plot(vel_kms, vis_raw.imag, color="tab:purple", lw=1.8, label="raw imag")
+            axes[1].plot(vel_kms, vis_model.imag, color="black", ls="--", lw=1.2, label="fitted baseline")
+            axes[1].set_xlabel("velocity [km/s]")
+            axes[1].set_ylabel("imag visibility [Jy]")
+            axes[1].set_title("Imaginary part")
+            axes[1].legend(loc="upper right")
+
+            axes[2].plot(vel_kms, np.abs(vis_raw), color="tab:gray", lw=1.5, label="raw amplitude")
+            axes[2].plot(vel_kms, np.abs(vis_resid), color="tab:red", lw=1.8, label="residual amplitude")
+            axes[2].axhline(
+                np.median(np.abs(vis_resid[line_free_conservative])),
+                color="black",
+                ls="--",
+                lw=1.0,
+                label="median line-free residual",
+            )
+            axes[2].set_xlabel("velocity [km/s]")
+            axes[2].set_ylabel("visibility amplitude [Jy]")
+            axes[2].set_title("Amplitude after complex baseline subtraction")
+            axes[2].legend(loc="upper right")
+
+            plt.tight_layout()
+            print(
+                "可见度域线外残差振幅中位数 ≈ "
+                f"{np.median(np.abs(vis_resid[line_free_conservative])):.4f} Jy"
+            )
+            """
+        ),
+        md(
+            r"""
+            这个练习想强调的不是“图像域做法一定错”，而是：**在真实数据处理中，连续谱扣除最好尽量发生在成像之前。** 这样做更容易把频谱基线问题和成像/卷积问题分离开。
+            """
+        ),
+        md(
+            r"""
+            ### 9.7.3 浏览 channel map：谱线不是一张图，而是一组随速度变化的切片
 
             连续谱图像只有二维，而谱线数据的基本对象是三维立方体。最直接的入口就是 channel map：观察不同速度通道上，发射在空间上如何移动、增强或减弱。
             """
@@ -1772,7 +1850,7 @@ NOTEBOOKS = {
         ),
         md(
             r"""
-            ### 9.7.3 用平滑辅助的 3D mask 构造 moment 0 与 moment 1 图
+            ### 9.7.4 用平滑辅助的 3D mask 构造 moment 0 与 moment 1 图
 
             若不加筛选就直接对整立方体积分，噪声会严重污染矩图。因此实践里一般会先构造一个 mask，只保留显著探测到发射的体素。
 
@@ -1880,7 +1958,7 @@ NOTEBOOKS = {
         ),
         md(
             r"""
-            ### 9.7.4 沿主轴抽取一个 PV diagram
+            ### 9.7.5 沿主轴抽取一个 PV diagram
 
             对旋转盘、外流、双峰结构或速度梯度而言，仅靠 channel map 和 moment 1 往往还不够。一个非常经典、也非常有解释力的诊断量，就是位置-速度图（PV diagram）。
 
@@ -1928,7 +2006,7 @@ NOTEBOOKS = {
         ),
         md(
             r"""
-            ### 9.7.5 做一个更完整的基础谱线测量：`W20/W50` 与单高斯摘要
+            ### 9.7.6 做一个更完整的基础谱线测量：`W20/W50` 与单高斯摘要
 
             下面基于 aperture 内的积分谱线，估计几类最常见的量：
 
@@ -1985,7 +2063,148 @@ NOTEBOOKS = {
         ),
         md(
             r"""
-            ### 9.7.6 与真实软件流程的对应
+            ### 9.7.7 当单高斯不够时：双分量近似与残差诊断
+
+            当前这个合成谱线刻意包含了一个主盘分量和一个偏红端弱云团，因此单高斯虽然给出了不错的摘要量，但不一定能把轮廓细节吃干净。
+
+            下面做一个教学用途的两步近似：
+
+            - 先用单高斯给出主摘要；
+            - 再对正残差做一次次级高斯拟合；
+            - 比较单高斯和双分量近似的残差。
+
+            这不是严格的联合非线性拟合，更不能替代真实科学分析中的完整似然建模；但它足以让学生看到“摘要量”和“模型解释”之间的差别。
+            """
+        ),
+        code(
+            """
+            secondary_input = np.clip(positive_spec - gauss_model, a_min=0.0, a_max=None)
+            sec_amp, sec_center, sec_sigma, sec_component = fit_single_gaussian_grid(
+                vel_kms, secondary_input, center_guess=gauss_center + 12.0
+            )
+            double_model = gauss_model + sec_component
+
+            single_residual = positive_spec - gauss_model
+            double_residual = positive_spec - double_model
+            single_resid_rms = np.sqrt(np.mean(single_residual**2))
+            double_resid_rms = np.sqrt(np.mean(double_residual**2))
+            residual_improvement = 100.0 * (single_resid_rms - double_resid_rms) / single_resid_rms
+            secondary_fwhm = 2.355 * sec_sigma
+            secondary_flux = np.sum(sec_component) * dv
+
+            fig, axes = plt.subplots(2, 1, figsize=(8.4, 6.5), sharex=True)
+
+            axes[0].plot(vel_kms, positive_spec, color="tab:blue", lw=2.0, label="data")
+            axes[0].plot(vel_kms, gauss_model, color="tab:orange", lw=1.5, label="single Gaussian")
+            axes[0].plot(vel_kms, sec_component, color="tab:green", lw=1.3, label="secondary component")
+            axes[0].plot(vel_kms, double_model, color="black", ls="--", lw=1.4, label="two-component approximation")
+            axes[0].set_ylabel("integrated flux density [Jy]")
+            axes[0].set_title("Single-Gaussian summary versus two-component approximation")
+            axes[0].legend(loc="upper right")
+
+            axes[1].plot(vel_kms, single_residual, color="tab:orange", lw=1.6, label="single-Gaussian residual")
+            axes[1].plot(vel_kms, double_residual, color="tab:green", lw=1.6, label="two-component residual")
+            axes[1].axhline(0.0, color="black", ls="--", lw=1.0)
+            axes[1].set_xlabel("velocity [km/s]")
+            axes[1].set_ylabel("residual [Jy]")
+            axes[1].legend(loc="upper right")
+
+            plt.tight_layout()
+            print(f"单高斯残差 RMS ≈ {single_resid_rms:.4f} Jy")
+            print(f"双分量近似残差 RMS ≈ {double_resid_rms:.4f} Jy")
+            print(f"残差 RMS 改善 ≈ {residual_improvement:.1f}%")
+            print(f"次级分量中心速度 ≈ {sec_center:.2f} km/s，FWHM ≈ {secondary_fwhm:.2f} km/s")
+            print(f"次级分量积分线通量 ≈ {secondary_flux:.2f} Jy km/s")
+            """
+        ),
+        md(
+            r"""
+            这个结果应当教会学生一件很重要的事：**单高斯“好用”，不等于单高斯“充分”。** 当残差仍有系统结构时，就要考虑肩部、双峰、云团或更复杂的运动学解释。
+            """
+        ),
+        md(
+            r"""
+            ### 9.7.8 从积分强度到物理量：柱密度与总 H I 质量的入口
+
+            一旦拿到了 moment 0 和积分线通量，最自然的下一步就是把它们转成物理量。这里给出两个最常见、也最适合作为教学入口的量：
+
+            - **H I 柱密度**：先把 `Jy/beam km/s` 转成 `K km/s`，再用 optically thin 近似得到 $N_{\mathrm{HI}}$；
+            - **总 H I 质量**：用距离和积分线通量估计 $M_{\mathrm{HI}}$。
+
+            这里的前提都需要明确说清楚：我们假设发射是 optically thin 的，并且距离已知。为了让数量级更接近真实教材里的常见例子，下面还会**额外假定一个实际成像后的 restoring beam**，而不是直接把这个合成实验里的数值卷积核当成真实望远镜波束。真实科学分析里，还必须继续检查自吸收、距离误差、漏通量和 aperture 选择等系统项。
+            """
+        ),
+        code(
+            """
+            beam_major_arcsec = 30.0
+            beam_minor_arcsec = 24.0
+            distance_mpc = 5.2
+
+            jybeam_to_tb = 1.222e6 / (
+                rest_freq_ghz**2 * beam_major_arcsec * beam_minor_arcsec
+            )
+            moment0_tb = moment0 * jybeam_to_tb
+            nhi_map = 1.823e18 * moment0_tb
+            source_mask_2d = moment0 > (0.25 * np.nanmax(moment0))
+            nhi_masked = np.where(source_mask_2d, nhi_map, np.nan)
+
+            peak_nhi = np.nanmax(nhi_masked)
+            mean_nhi = np.nanmean(nhi_masked)
+            hi_mass = 2.356e5 * distance_mpc**2 * integrated_flux
+            hi_mass_secondary = 2.356e5 * distance_mpc**2 * secondary_flux
+            inclination_deg = 58.0
+            global_vrot = 0.5 * w50 / np.sin(np.deg2rad(inclination_deg))
+
+            fig, axes = plt.subplots(1, 2, figsize=(11, 4.4))
+
+            im0 = axes[0].imshow(
+                moment0,
+                origin="lower",
+                extent=[coords[0], coords[-1], coords[0], coords[-1]],
+                cmap="magma",
+            )
+            axes[0].set_title("Moment 0 used for physical estimates")
+            axes[0].set_xlabel("RA offset [arcsec]")
+            axes[0].set_ylabel("Dec offset [arcsec]")
+            plt.colorbar(im0, ax=axes[0], shrink=0.82, label="Jy km/s / beam")
+
+            im1 = axes[1].imshow(
+                np.log10(nhi_masked),
+                origin="lower",
+                extent=[coords[0], coords[-1], coords[0], coords[-1]],
+                cmap="viridis",
+            )
+            axes[1].set_title("log10 N_HI [cm^-2]")
+            axes[1].set_xlabel("RA offset [arcsec]")
+            axes[1].set_ylabel("Dec offset [arcsec]")
+            plt.colorbar(im1, ax=axes[1], shrink=0.82, label="log10 cm^-2")
+
+            plt.tight_layout()
+            print(f"假定 restoring beam = {beam_major_arcsec:.0f}'' x {beam_minor_arcsec:.0f}''")
+            print(f"假定距离 = {distance_mpc:.1f} Mpc")
+            print(f"峰值 H I 柱密度 ≈ {peak_nhi:.2e} cm^-2")
+            print(f"源区平均 H I 柱密度 ≈ {mean_nhi:.2e} cm^-2")
+            print(f"总 H I 质量 ≈ {hi_mass:.2e} Msun")
+            print(f"若把次级谱线分量单独看待，其 H I 质量量级 ≈ {hi_mass_secondary:.2e} Msun")
+            print(
+                f"若把 W50 当成未分辨盘的全局轮廓，且倾角取 {inclination_deg:.0f} deg，"
+                f"则粗略旋转速度入口 ≈ {global_vrot:.2f} km/s"
+            )
+            """
+        ),
+        md(
+            r"""
+            这里的数值只应被理解成“分析入口”，而不是最终科学结论。真正进入论文级工作时，还要继续追问：
+
+            - beam 稀释有没有把峰值柱密度压低？
+            - aperture 与 mask 有没有漏掉低面亮度扩展发射？
+            - 如果线型明显复杂，总质量和次级分量通量的分配是否依赖模型假设？
+            - 若要讨论动力学，是否已经需要 tilted-ring、3D cube fitting 或更系统的 PV 解读？
+            """
+        ),
+        md(
+            r"""
+            ### 9.7.9 与真实软件流程的对应
 
             若把这个练习映射到真实软件环境，最常见的谱线处理链大致是：
 
@@ -1994,7 +2213,8 @@ NOTEBOOKS = {
             - `tclean`（cube mode）：逐通道成像得到 data cube；
             - `immoments` 或更稳健的外部工具：在 mask 基础上构造矩图；
             - `impv` 或自定义切片：抽取 PV diagram；
-            - `specfit` 或自定义测量：估计速度、线宽和积分通量。
+            - `specfit` 或更完整的模型：比较单分量和多分量线型；
+            - 自定义物理量换算：把 moment 0 和积分线通量连回 $N_{\mathrm{HI}}$、$M_{\mathrm{HI}}$ 和粗略动力学量。
 
             这里最重要的专业判断是：**谱线处理不只是“连续谱成像再多一维”。** 它需要更谨慎的频谱基线处理、更明确的 line-free 选择、更有意识的掩膜构造，以及把空间结构和速度结构一起读出来的习惯。
             """
@@ -2027,7 +2247,7 @@ NOTEBOOKS = {
             - 自校准；
             - 图像质量评估；
             - 平均与展宽的工程约束。
-            - 基础谱线处理：line-free 选择、continuum subtraction、channel map、平滑辅助 masking、PV 图与 `W20/W50` 线宽诊断。
+            - 基础谱线处理：line-free 选择、`uv-domain` 概念实验、channel map、平滑辅助 masking、PV 图、`W20/W50`、双分量近似与 H I 物理量入口。
 
             但如果要进一步对齐现代国际训练体系，后续最值得继续扩展的方向仍然包括：
 
@@ -2057,7 +2277,7 @@ NOTEBOOKS = {
 
             若继续扩展第 9 章，建议优先顺序仍然是：
 
-            1. 谱线处理的再加厚版：更真实的 uv-domain continuum subtraction、3D masking、PV 解读与多分量线型拟合；
+            1. 谱线处理的再加厚版：更真实的 uv-domain continuum subtraction、3D masking、PV 解读、旋转曲线与更稳健的多分量线型拟合；
             2. 宽场/宽带高级成像；
             3. 偏振成像与偏振校准；
             4. 短间距与单碟联合成像；
