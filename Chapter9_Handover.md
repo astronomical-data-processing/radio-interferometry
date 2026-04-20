@@ -27,6 +27,7 @@
 - 一条宽带/宽场高级成像入口：MFS 思路、频谱指数恢复、主波束校正与噪声放大权衡。
 - 一条偏振成像入口：Stokes `I/Q/U/V`、偏振强度 debias、leakage / `D-term` 概念与最小 `RM` 拟合。
 - 一条短间距与联合成像入口：missing flux、negative bowl、单碟互补与 feather 权衡。
+- 一条偏振高级入口：交叉手相位校准、Faraday 多分量判断与 `RM synthesis`。
 
 
 ## 本轮已完成内容
@@ -43,6 +44,7 @@
 - `9_Practical/9_8_wideband_and_widefield_imaging.ipynb`
 - `9_Practical/9_9_polarization_imaging.ipynb`
 - `9_Practical/9_10_short_spacing_and_feather.ipynb`
+- `9_Practical/9_11_polarization_calibration_and_rm_synthesis.ipynb`
 - `9_Practical/9_x_further_reading_and_workflow.ipynb`
 
 同时保留并改写了兼容入口：
@@ -71,6 +73,7 @@
 - `9.8` 已建立第一版宽带/宽场高级成像实践，把 MFS、主波束频率依赖、频谱指数偏差和 PB 校正噪声放大联系起来；
 - `9.9` 已建立第一版偏振实践，把 Stokes `I/Q/U/V`、偏振强度 debias、leakage / `D-term` 与 `RM` 拟合联系起来；
 - `9.10` 已建立第一版短间距实践，把 missing flux、negative bowl、单碟互补和 feather 组合联系起来；
+- `9.11` 已建立第一版高级偏振实践，把交叉手相位校准、Faraday 多分量与 `RM synthesis` 联系起来；
 - `9.x` 已改为下一步扩展方向与阅读引导页；
 - 旧文件 `pimaging.ipynb` 和 `9_3_Observing_smearing.ipynb` 现在保留为兼容导航页，不再承载主线内容。
 
@@ -91,11 +94,11 @@
 
 ### 2. 偏振实践已经进入第 9 章，但还可以继续做深
 
-当前 `9.9` 已经建立了第一版偏振成像入口，但若要达到成熟训练教程的深度，后续仍建议继续补强：
+当前 `9.9` 和 `9.11` 已经建立了从偏振成像入口到交叉手相位校准、`RM synthesis` 的第一版训练链，但若要达到成熟训练教程的深度，后续仍建议继续补强：
 
 - 更完整的交叉手校准链，例如 `XY phase` / `R-L phase`、cross-hand delay；
 - 更真实的 `D-term` 求解与偏振校准流程；
-- `RM synthesis`、Faraday depth 与多分量情形；
+- `RM-CLEAN`、Faraday depth 建模与 `QU-fitting`；
 - 主波束偏振响应、beam depolarization 与带宽去极化的更系统实验。
 
 ### 3. 短间距与联合成像已经进入第 9 章，但还可以继续做深
@@ -132,10 +135,10 @@
 
 若继续扩展第 9 章，建议按下面顺序推进：
 
-1. 继续加深偏振校准与 RM synthesis
-2. 继续加深宽带/宽场方向相关成像
-3. 继续加厚现有谱线处理 notebook
-4. 继续加深联合成像与多阵列整合
+1. 继续加深宽带/宽场方向相关成像
+2. 继续加厚现有谱线处理 notebook
+3. 继续加深联合成像与多阵列整合
+4. 继续加深偏振校准链与 Faraday 建模
 5. 最后再补 archive / pipeline / software ecosystem 相关内容
 
 
@@ -143,7 +146,7 @@
 
 当前判断与 `Roadmap.md` 一致：
 
-- 第 9 章现在已经从“零散实践页”升级成“连续谱主线 + 已加厚的谱线实践 + 第一版宽带/宽场实践 + 第一版偏振实践 + 第一版短间距实践”；
+- 第 9 章现在已经从“零散实践页”升级成“连续谱主线 + 已加厚的谱线实践 + 第一版宽带/宽场实践 + 偏振基础与高级实践 + 第一版短间距实践”；
 - 但它仍只是 P0 路线中的基础层；
 - 后续最重要的仍然是把第 9 章继续扩成更厚的谱线、偏振、宽场、短间距等专题实践平台。
 
