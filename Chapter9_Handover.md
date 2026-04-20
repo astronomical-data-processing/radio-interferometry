@@ -24,6 +24,7 @@
 - 图像质量评估与基本测量；
 - averaging 与 smearing 的工程约束。
 - 一条可运行且更接近真实工作的谱线处理链：line-free 通道选择、`uv-domain` 基线拟合概念实验、channel map、平滑辅助 masking、PV 图、`W20/W50`、双分量近似与 H I 物理量入口。
+- 一条宽带/宽场高级成像入口：MFS 思路、频谱指数恢复、主波束校正与噪声放大权衡。
 
 
 ## 本轮已完成内容
@@ -37,6 +38,7 @@
 - `9_Practical/9_5_image_assessment_and_measurement.ipynb`
 - `9_Practical/9_6_averaging_and_smearing.ipynb`
 - `9_Practical/9_7_spectral_line_processing.ipynb`
+- `9_Practical/9_8_wideband_and_widefield_imaging.ipynb`
 - `9_Practical/9_x_further_reading_and_workflow.ipynb`
 
 同时保留并改写了兼容入口：
@@ -62,6 +64,7 @@
 - `9.5` 增加了背景噪声、动态范围、beam-aware 通量测量等基础 QA 动作；
 - `9.6` 把 smearing 与 averaging 参数选择联系起来，不再只是静态公式说明；
 - `9.7` 已从“最小谱线原型”加厚为更完整的训练页，加入了 line-free 选择对比、`uv-domain` 基线拟合概念实验、平滑辅助 mask、PV 图、`W20/W50`、双分量近似，以及柱密度和 H I 质量的入门换算；
+- `9.8` 已建立第一版宽带/宽场高级成像实践，把 MFS、主波束频率依赖、频谱指数偏差和 PB 校正噪声放大联系起来；
 - `9.x` 已改为下一步扩展方向与阅读引导页；
 - 旧文件 `pimaging.ipynb` 和 `9_3_Observing_smearing.ipynb` 现在保留为兼容导航页，不再承载主线内容。
 
@@ -89,14 +92,15 @@
 - leakage / D-term 的流程化说明
 - RM 或 Faraday rotation 的入门实践接口
 
-### 3. 宽带与宽场高级成像还未展开
+### 3. 宽带与宽场高级成像已经起步，但还未做深
 
-当前 `9.3` 和 `9.6` 已建立入口，但还缺：
+当前 `9.8` 已经建立了第一版宽带/宽场实践，但若要达到成熟训练教程的深度，后续仍建议继续补强：
 
-- MFS / MT-MFS
-- primary beam correction
-- wide-field 参数选择实验
-- A-projection / AW-projection 的工作流说明
+- 更完整的 MT-MFS / Taylor-term 解释
+- 更真实的 wideband primary beam correction 场景
+- 更系统的 wide-field 参数选择实验
+- A-projection / AW-projection 与方向相关效应的工作流说明
+- mosaic 或多指向情形下的宽场处理入口
 
 ### 4. 图像测量还可以更完整
 
@@ -113,9 +117,9 @@
 若继续扩展第 9 章，建议按下面顺序推进：
 
 1. 继续加厚现有谱线处理 notebook
-2. 扩展宽带/宽场高级成像 notebook
-3. 新增偏振处理实践
-4. 增加数据合并与短间距案例
+2. 新增偏振处理实践
+3. 增加数据合并与短间距案例
+4. 继续加深宽带/宽场方向相关成像
 5. 最后再补 archive / pipeline / software ecosystem 相关内容
 
 
@@ -123,7 +127,7 @@
 
 当前判断与 `Roadmap.md` 一致：
 
-- 第 9 章现在已经从“零散实践页”升级成“连续谱主线 + 已加厚的第一批谱线实践”；
+- 第 9 章现在已经从“零散实践页”升级成“连续谱主线 + 已加厚的谱线实践 + 第一版宽带/宽场实践”；
 - 但它仍只是 P0 路线中的基础层；
 - 后续最重要的仍然是把第 9 章继续扩成更厚的谱线、偏振、宽场、短间距等专题实践平台。
 
