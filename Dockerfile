@@ -1,6 +1,6 @@
 FROM radioastro/python
 
-MAINTAINER gijs@pythonic.nl
+MAINTAINER fengwang@gzhu.edu.cn
 
 RUN apt-get update && apt-get install -yq --no-install-recommends \
     libpng-dev \
@@ -14,8 +14,6 @@ RUN apt-get update && apt-get install -yq --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /
-
-RUN pip install numpy==1.10.1
 
 RUN pip install -r /requirements.txt
 

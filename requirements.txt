@@ -1,10 +1,11 @@
-yolk==0.4.3
-numpy==1.10.1
-matplotlib==1.5.0
-scipy==0.16.1
-ipython[all]
-astropy==1.1.1
-aplpy==1.0
-ipywidgets==4.1.1
-healpy==1.10.3
-ephem==3.7.6.0
+# 说明：
+# - 这是当前仓库的基础依赖列表，不是严格锁定版本的 lockfile。
+# - 第 8、9 章大量重写后的 notebook 主要依赖 numpy、matplotlib 和 Jupyter。
+# - astropy 与 scipy 用于支持部分理论章节、历史示例和 FITS 读写。
+
+jupyter
+numpy
+matplotlib
+scipy
+astropy
+ipywidgets

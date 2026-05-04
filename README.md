@@ -1,220 +1,128 @@
-# Fundamentals of Radio Interferometry - 射电干涉基础
+# 射电干涉孔径合成基础
 
-在SKA天文台公约签署后，中国加入SKA项目基本成为定局，中国迫切需要有更多的科学或工程人员参与这个人类历史上最伟大的天文望远镜的建设。但相对而言，射电干涉的相关技术与普通天文光学观测的概念差异甚远，特别是射电干涉成像与光学成像的概念区别非常大，这使得射电干涉的初学者觉得非常困难。
+本仓库是一套面向中文学习者的射电干涉基础与数据处理教程，采用 Jupyter Notebook 组织内容，覆盖从射电科学背景、数学基础、可见度空间、成像、去卷积、观测系统、校准，到实践工作流的完整主线。
 
-我一直想有一个机会，能把近几年团队的工作好好总结一下，编写一个相对简单易解的射电干涉阵的教程。在一个偶然的机会中在GitHUB上看到一个类似的项目，通读一遍后感觉很好，虽然还有很多章节没有完成，但基本结构已经成形。衷心向南非的团队祝贺，他们的工作让人敬佩，项目中的参与人员有些我很熟悉。我随后与项目负责人（Griffin Foster <griffin.foster@gmail.com>）发了邮件，说明有兴趣生成一个中文版本，很快得到了他的回信，说明他个人是没有问题的，但这个项目也已经有很长时间没有更新了。
+项目起源于原始英文教材 [Fundamentals of Radio Interferometry](https://github.com/griffinfoster/fundamentals_of_interferometry)。当前中文仓库已经不再是早期的双语镜像，而是在原有结构基础上进行了系统中文化、重写、扩写与实践重构，目标是形成一套适合中文教学与培训使用的专业教程。
 
-本工作是一个基于Ipython notebook的射电干涉基础学习教材，也已经被NASSP选为硕士教材（https://ratt-ru.github.io/fundamentals_of_interferometry/)，力争通过社区的努力，通过持续改进和不断完善与更新，最终能成为一个射电干涉方面的基础教程，推进射电干涉阵技术能被更多的理解与解决。
+## 当前状态
 
-为了共同的事业，欢迎有更多的人加入社团，加入本项目，一起贡献才智。为我国参与SKA项目能培养出更多的青年人才。
+- 第 1 至第 8 章主体内容已经完成系统中文重写与统一风格整理。
+- 第 9 章已经重构为一条连续的实践工作流，不再是零散截图式演示。
+- 当前版本已经具备一个完整可用的中文教材主体，后续重点主要是精修、加厚和继续提升训练深度，而不是补空白骨架。
 
-## 中文版本的说明
-原有的英文版本客观地说仍存在很多不足，同时有很多章节还没有完成。中文版力争把这些内容重写，同时把后续没有完成的部分继续写完。此外，根据Python当前的发展趋势，中文版本将基于Python3版本。
+如果只看一句话：当前仓库已经可以作为一套完整的中文射电干涉基础教程使用。
 
-如果项目可以结束，我们会争取把当前中文改进的部分再更新到英文版。
+## 内容结构
 
-## 数据文件
+- [0_Introduction/0_introduction.ipynb](0_Introduction/0_introduction.ipynb)：总目录与阅读入口。
+- [0_Introduction/1_glossary.ipynb](0_Introduction/1_glossary.ipynb)：术语表。
+- `1_Radio_Science`：射电科学与基础天体物理背景。
+- `2_Mathematical_Groundwork`：傅里叶、采样、卷积、最小二乘等数学基础。
+- `3_Positional_Astronomy`：位置天文学与坐标系统。
+- `4_Visibility_Space`：基线、可见度、UV 覆盖与 van Cittert-Zernike 定理。
+- `5_Imaging`：成像、权重、网格化、宽场效应。
+- `6_Deconvolution`：去卷积、CLEAN、残差与图像质量。
+- `7_Observing_Systems`：RIME、主波束、极化、传播效应、RFI 等观测系统问题。
+- `8_Calibration`：1GC、2GC、3GC 与校准主线。
+- `9_Practical`：现代实践工作流。
 
-为了运行与测试本项目，还需要一些额外的大数据文件 (> 1MB), 主要是FITS图像文件，请自行下载。 [here](https://www.dropbox.com/s/n3jyiajytwuldpu/fundamentals_fits.tar.gz?dl=0)), KAT-7仿真测量集（measurement sets）文件[here](https://www.dropbox.com/s/kb3p2mthei8dgl9/simulated_KAT-7_ms.tar.gz?dl=0)。文件均采用tar格式，需要在data子目录下解压使用.
+## 第 9 章实践部分
 
-```
-cd fundamentals_of_interferometry/data/
-tar xvzf fundamentals_fits.tar.gz
-cd simulated_kat_7_vis
-tar xvzf simulated_KAT-7_ms.tar.gz
-```
+当前实践链已经形成比较完整的训练结构，包括：
 
-## 版面风格说明（Style Guide）
+- 数据检查与初步质量控制
+- 基础校准流程
+- 连续谱基础成像
+- 自校准
+- 图像质量评估与测量
+- averaging 与 smearing
+- 基础谱线处理
+- 宽带与宽场成像
+- 偏振成像
+- 短间距与 feather
+- 交叉手相位校准与 `RM synthesis`
+- 宽场方向相关成像
+- 高级谱线分析：`3D mask`、source finding、组件目录、`PV ridge` 与简化运动学拟合
 
-为了保证内容的前后一致性，在本项目中采用了统一的风格，请后续维护与开发中保持这一风格 [style guide](https://github.com/astronomical-data-processing/fundamentals_of_interferometry_chinese/blob/master/0_Introduction/0_introduction.ipynb)。此外，项目也给出了一个修订模板 [editing guide](https://github.com/astronomical-data-processing/fundamentals_of_interferometry_chinese/blob/master/0_Introduction/editing_guide.ipynb) 供后续修订中参考使用。
+如果你只想从实践部分开始，建议直接阅读 [9_Practical/9_1_visualisation-inspection.ipynb](9_Practical/9_1_visualisation-inspection.ipynb)。
 
-## 设置VirtualENV (Setup contributor virtualenv)
+## 如何开始阅读
 
-如果您有意加入本项目，可以利用virtualenv构建同样的开发环境，以此保证您的软件环境与其它开发者一致。下面简单介绍如何在Ubuntu系统中(在14.04和16.04测试)设置相应的环境，如果是其它的环境需要有一些微小的修改。需要说明一下，在原项目中采用Python 2，但考虑到未来的发展，本项目修改了全部代码，全部移植到了Python3的环境。
+推荐顺序：
 
-目前建议使用pip来安装软件包，重要的软件包的版本需求如下:
+1. 从 [0_Introduction/0_introduction.ipynb](0_Introduction/0_introduction.ipynb) 进入全书目录。
+2. 按章节顺序阅读第 1 到第 8 章理论部分。
+3. 再进入 [9_Practical/9_1_visualisation-inspection.ipynb](9_Practical/9_1_visualisation-inspection.ipynb)，按实践链顺序继续。
 
-* pip 7.1.2
-* python 2.7.6P
-* numpy 1.10.1
-* matplotlib 1.5.0
-* scipy 0.16.1
-* ipython 4.2.0
-* astropy 1.1.1
-* aplpy 1.0
-* ipywidgets 4.1.1
-* healpy 1.10.3
-* ephem 3.7.6.0
+如果只是局部查阅，也建议先看术语表和相关章节目录，避免不同章节之间的符号、术语和约定脱节。
 
-在开发中可以参考：
+## 运行方式
 
-* <http://jeffskinnerbox.me/posts/2013/Oct/06/ipython-notebook-in-virtualenv/>
-* <http://iamzed.com/2009/05/07/a-primer-on-virtualenv/>
-* <http://jonathanchu.is/posts/virtualenv-and-pip-basics/>
-* <https://warpedtimes.wordpress.com/2012/09/23/a-tutorial-on-virtualenv-to-isolate-python-installations/>
+本仓库以 Notebook 为主，推荐使用 Python 3 和 Jupyter 环境。
 
-在安装虚拟环境前，根据不同系统的需要需要安装相应的一些底层库，如：
+最基础的打开方式通常是：
 
-```
-sudo apt-get install libpng-dev libncurses5-dev
-```
-
-设置一个可以运行本项目的干净环境，基本过程如下，先运行：:
-
-```
-$ which pip
-```
-
-如果没有报错，开始安装pip:
-
-```
-$ sudo easy_install pip
+```bash
+python -m pip install jupyter numpy matplotlib
+jupyter lab
 ```
 
-然后继续运行：
+然后从仓库根目录打开对应的 `.ipynb` 文件即可。
 
-```
-$ which virtualenv
-```
+需要说明的是：
 
-如果没有报错，开始安装virtualenv:
+- 当前重写后的很多实践 notebook，特别是第 9 章的大部分页面，已经尽量做到自包含，并优先使用 `numpy` 与 `matplotlib` 进行可运行演示。
+- 部分历史页面、遗留示例或外部数据案例，仍可能需要额外依赖或数据文件。
+- 当前的 [requirements.txt](requirements.txt) 已经整理为“当前基础依赖列表”，适合作为仓库的默认安装入口；但它仍不是严格锁定版本的可复现实验环境文件。
+- 目前已确认 `ephem`、`healpy` 和 `aplpy` 都不再是当前仓库的活动依赖。
 
-```
-$ sudo apt-get install python-virtualenv
-$ sudo pip install virtualenvwrapper
-```
+## 数据文件说明
 
-如果系统中已经安装好了基础软件包，那就可以创新一个虚拟环境(virtualenv)，我个人倾向于在一个地方保存所有的虚拟环境，比如全部都放在一个目录下，或者都放在宿主目录(Home）下。
+当前仓库中的大量重写内容已经尽量减少对外部大数据文件的依赖，但部分历史内容或原始数据示例仍可能需要 `data/` 目录下的额外文件。
 
-```
-$ cd .virtualenv
-$ virtualenv --no-site-packages fundamentals
-```
+历史数据链接仍保留如下：
 
-上面这个命令就可以创新出一个基础的虚拟环境在.virtualenv目录下，这个目录与系统的site-packages是完全独立的，然后进一步激活这个虚拟环境：
+- FITS 图像数据：<https://www.dropbox.com/s/n3jyiajytwuldpu/fundamentals_fits.tar.gz?dl=0>
+- KAT-7 仿真 measurement set：<https://www.dropbox.com/s/kb3p2mthei8dgl9/simulated_KAT-7_ms.tar.gz?dl=0>
 
-```
-$ cd fundamentals
-$ source bin/activate
-```
+若确实需要这些历史数据，请将其解压到仓库内对应的 `data/` 子目录中。后续如继续维护，建议优先采用相对路径和可配置路径变量，不要在 notebook、脚本或文档中写死个人机器路径。
 
-在基础环境完成后，先从github上克隆本仓库，克隆时可以从您fork后的项目中进行，这样会方便后面的更新：
+## 维护与扩展
 
-```
-$ git clone https://github.com/[username]/fundamentals_of_interferometry.git
-```
+如果后续继续扩展本项目，建议先阅读以下文档：
 
-如果只是希望运行本项目，那可以直接克隆本仓库.
+- [Roadmap.md](Roadmap.md)：全书后续补强方向。
+- [Chapter7_Handover.md](Chapter7_Handover.md)：第 7 章交接说明。
+- [Chapter8_Handover.md](Chapter8_Handover.md)：第 8 章交接说明。
+- [Chapter9_Handover.md](Chapter9_Handover.md)：第 9 章交接说明。
 
-```
-$ git clone https://github.com/astronomical-data-processing/fundamentals_of_interferometry_chinese.git
-```
-需要注意的是，更多初学者经常在这里迷糊，一定要记得在构建虚拟环境后，这个虚拟环境是一个完全干净的环境，也就是说在这个环境下没有安装什么软件包，根据软件的需要，我们需要自行安装不同的软件包。安装一般采用两种方法：1）根据项目需要手工运行pip逐个安装；2）直接利用需求文件（requirements file）来安装。一般推荐采用后者。当然如果在安装过程中出了错误，也也需要手工再来进行处理。一般来说，需求文件都放在主目录下[here](https://raw.githubusercontent.com/astronomical-data-processing/fundamentals_of_interferometry_chinese/master/requirements.txt).
+与当前仓库状态直接相关的维护约定包括：
 
-```
-$ pip install --upgrade pip
-$ pip install -r [path to file]/requirements.txt
-```
+- 中文正文为主，英文只保留必要术语、变量名、软件任务名和缩写。
+- 优先保证 notebook 自包含、可执行、适合作为教学材料阅读。
+- 实践页优先解释“这一步解决什么问题”，而不是简单堆命令。
+- 程序、脚本、notebook 和文档中不要写死个人机器上的绝对路径，例如 `/home/username/...`。
 
-或者：
+第 9 章的实践 notebook 目前由生成脚本统一维护：
 
-```
-$ pip install --upgrade pip
-$ pip install yolk
-$ pip install numpy
-$ pip install matplotlib
-$ pip install scipy
-$ pip install ipython[all]
-$ pip install --no-deps astropy
-$ pip install aplpy
-$ pip install healpy
-$ pip install ipywidgets
-$ pip install ephem
-```
+- [tools/rebuild_chapter9_notebooks.py](tools/rebuild_chapter9_notebooks.py)
 
-在上述安装都完成后，就可以开始运行ipython notebook服务器了:
+如果修改了第 9 章的实践内容，建议通过该脚本重建相关 notebook。
 
-```
-$ cd fundamentals_of_interferometry
-$ jupyter notebook
-```
+## 风格与编辑入口
 
-在运行后要停止服务，在终端窗口中按ctrl-c然后输入y即可。如果要解除virtualenv的激活状态，可以运行:
+- [0_Introduction/0_introduction.ipynb](0_Introduction/0_introduction.ipynb)：总目录与结构入口。
+- [0_Introduction/editing_guide.ipynb](0_Introduction/editing_guide.ipynb)：编辑参考。
 
-```
-$ deactivate
-```
+## 致谢
 
-如果在解除激活后又需要再次应用virtualenv，则可以在本项目的目录下运行:
+本项目基于原始英文教材项目继续发展。感谢原始英文版本的作者与贡献者为射电干涉教学社区打下的重要基础：
 
-```
-$ source bin/activate
-```
+- 原始英文仓库：<https://github.com/griffinfoster/fundamentals_of_interferometry>
+- 原始课程网站：<https://ratt-ru.github.io/fundamentals_of_interferometry/>
 
-### Data
+中文版本在此基础上持续重写、整理和扩展，力图形成一套更适合中文学习者的系统教程。
 
-为了避免在项目中包含有大量的数据文件，为运行本项目，请自行下载所需要的数据集 [here](https://www.dropbox.com/s/n3jyiajytwuldpu/fundamentals_fits.tar.gz?dl=0), 还有一个仿真的KAT-7 measurement sets文件 [here](https://www.dropbox.com/s/kb3p2mthei8dgl9/simulated_KAT-7_ms.tar.gz?dl=0).
+## 许可证
 
-在本仓库的根目录下，找到data子目录 ``data/``，把下载好的数据文件在这个目录下解压，操作如下：
-
-```
-$ cd [fundamentals root]/data/
-$ mv [location of download]/fundamentals_fits.tar.gz .
-$ tar xvzf fundamentals_fits.tar.gz
-$ cd simulated_kat_7_vis/
-$ mv [location of download]/simulated_KAT-7_ms.tar.gz .
-$ tar xvzf simulated_KAT-7_ms.tar.gz
-```
-
-#### freetype
-
-If there is a freetype related error, try:
-
-```
-sudo apt-get install libfreetype6-dev
-```
-
-#### fortran
-
-If there is a fortran related error, try:
-
-```
-sudo apt-get install gfortran
-```
-
-### 贡献人（Contributors）
-
-感谢以下的项目原创人员：
-* Alexander Akoto-Danso ([@akotodanso](https://github.com/akotodanso))
-* Marcellin Atemkeng ([@atemkeng](https://github.com/atemkeng))
-* Landman Bester ([@landmanbester](https://github.com/landmanbester))
-* Tariq Blecher ([@TariqBlecher](https://github.com/TariqBlecher))
-* Roger Deane ([@rdeane](https://github.com/rdeane))
-* Griffin Foster ([@griffinfoster](https://github.com/griffinfoster))
-* Marisa Geyer ([@marisageyer](https://github.com/marisageyer))
-* Julien Girard ([@JulienNGirard](https://github.com/JulienNGirard))
-* Trienko Grobler ([@Trienko](https://github.com/Trienko))
-* Benna Hugo ([@bennahugo](https://github.com/bennahugo))
-* Gyula (Josh) Jozsa ([@gigjozsa](https://github.com/gigjozsa))
-* Ermias Abebe Kassaye ([@Ermiasabebe](https://github.com/Ermiasabebe))
-* Jonathan Kenyon ([@JSKenyon](https://github.com/JSKenyon))
-* Sphesihle Makhathini ([@SpheMakh](https://github.com/SpheMakh))
-* Modhurita Mitra ([@modhurita](https://github.com/modhurita))
-* Gijs Molenaar ([@gijzelaerr](https://github.com/gijzelaerr))
-* Jared Norman ([@jfunction](https://github.com/jfunction))
-* Ridhima Nunhokee ([@Chuneeta](https://github.com/Chuneeta))
-* Simon Perkins ([@sjperkins](https://github.com/sjperkins))
-* Laura Richter ([@LauraRichter](https://github.com/LauraRichter))
-* Lerato Sebokolodi ([@Sebokolodi](https://github.com/Sebokolodi))
-* Oleg Smirnov ([@o-smirnov](https://github.com/o-smirnov))
-* Ulrich Mbou Sob ([@ulricharmel](https://github.com/ulricharmel))
-* Tim Staley ([@timstaley](https://github.com/timstaley))
-* Cyril Tasse ([@cyriltasse](https://github.com/cyriltasse))
-* Kshitij Thorat ([@KshitijT](https://github.com/KshitijT))
-* Etienne Bonnassieux ([@ebonnassieux](https://github.com/ebonnassieux))
-
-针对后续版本与中文版本，主要有如下人员参与：
-* Feng Wang([@cnwangfeng](https://github.com/cnwangfeng))
-* Hui Deng ()
-* Shoulin Wei()
-* Ying Mei ()
+许可证信息请见 [LICENSE](LICENSE) 和 [LICENSE.md](LICENSE.md)。

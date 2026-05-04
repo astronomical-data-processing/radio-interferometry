@@ -21,7 +21,7 @@ def convert(fileitrf, save_enu=True, plot=False):
     for line in f:
         line=line.strip()
         columns=line.split()
-        print columns
+        print(columns)
         tabx.append(columns[0])
         taby.append(columns[1])
         tabz.append(columns[2])

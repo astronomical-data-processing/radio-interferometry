@@ -39,7 +39,7 @@ def ap_index(nsrc=0, ntime=1, na=1, nchan=0):
     assert T, 'Number of timesteps must be greater than 1'
     assert A, 'Number of antenna must be greater than 1'
 
-    nbl = na*(na+1)/2
+    nbl = na*(na+1)//2
 
     # This produces the default antenna pair mapping
     # ANT1: 0000 111 22 3
@@ -67,7 +67,7 @@ def ap_index(nsrc=0, ntime=1, na=1, nchan=0):
         chan_slice = tuple([c for c, n in zip(CHAN_SLICE, needed) if n])
         idx.append(np.arange(nchan)[chan_slice])
 
-    return idx
+    return tuple(idx)
 
 def brightness(I, Q, U, V):
     """ Create a brightness matrix from the supplied stokes parameters """
@@ -236,7 +236,7 @@ def KAT7_antenna_uvw(ref_ra=60, ref_dec=45):
     # Check that we get the correct number of baselines
     # including auto-correlations
     na = KAT7_ants.shape[0]   
-    nbl = na*(na+1)/2 
+    nbl = na*(na+1)//2 
     ntime = bl_uvw.shape[0]//nbl
     assert bl_uvw.shape == (ntime*nbl, 3)
 
@@ -295,12 +295,12 @@ def rime(ant_uvw, sources, frequencies):
     nsrc, _ = lm.shape
     nchan, = frequencies.shape
 
-    print 'RIME Dimensions'
-    print 'nsrc:   %s' % nsrc
-    print 'ntime:  %s' % ntime
-    print 'na:     %s' % na
-    print 'nbl:    %s' % nbl
-    print 'nchan:  %s' % nchan
+    print('RIME Dimensions')
+    print('nsrc:   %s' % nsrc)
+    print('ntime:  %s' % ntime)
+    print('na:     %s' % na)
+    print('nbl:    %s' % nbl)
+    print('nchan:  %s' % nchan)
 
     # Compute per antenna phase term
     K_per_ant = phase(lm, ant_uvw, frequencies)
@@ -323,4 +323,3 @@ def rime(ant_uvw, sources, frequencies):
 
     # Return visibilities
     return V_pq.reshape(ntime, nbl, nchan, 2, 2)
-
