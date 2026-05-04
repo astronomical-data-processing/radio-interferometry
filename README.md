@@ -1,6 +1,6 @@
 # 射电干涉孔径合成基础
 
-本仓库是一套面向中文学习者的射电干涉基础与数据处理教程，采用 Jupyter Notebook 组织内容，覆盖从射电科学背景、数学基础、可见度空间、成像、去卷积、观测系统、校准，到实践工作流的完整主线。
+本仓库是一套面向中文教学与科研训练场景的射电干涉基础与数据处理教程，采用 Jupyter Notebook 组织内容，覆盖从射电科学背景、数学基础、可见度空间、成像、去卷积、观测系统、校准，到实践工作流的完整主线。
 
 项目起源于原始英文教材 [Fundamentals of Radio Interferometry](https://github.com/griffinfoster/fundamentals_of_interferometry)。当前中文仓库已经不再是早期的双语镜像，而是在原有结构基础上进行了系统中文化、重写、扩写与实践重构，目标是形成一套适合中文教学与培训使用的专业教程。
 
@@ -54,8 +54,9 @@
 - 宽带宽场算法边界：`MT-MFS`、主波束谱指数偏差、`w-term`、`A/AW-projection` 与方向相关校准
 - 观测设计与归档数据再分析：科学目标、频谱设置、校准节奏、`QA`、`weblog` 与 provenance
 - 软件生态与可复现实践：CASA、WSClean、DP3/DDFacet、CARTA、PyBDSF、SoFiA、Astropy 生态与 provenance
+- VLBI 实践入口：延迟模型、`fringe fitting`、相位参考、SEFD 定标、天体测量与紧致源成像
 
-如果你只想从实践部分开始，建议直接阅读 [9_Practical/9_1_visualisation-inspection.ipynb](9_Practical/9_1_visualisation-inspection.ipynb)。
+若只从实践部分开始，建议直接阅读 [9_Practical/9_1_visualisation-inspection.ipynb](9_Practical/9_1_visualisation-inspection.ipynb)。
 
 ## 如何开始阅读
 
@@ -96,7 +97,7 @@ jupyter lab
 - FITS 图像数据：<https://www.dropbox.com/s/n3jyiajytwuldpu/fundamentals_fits.tar.gz?dl=0>
 - KAT-7 仿真 measurement set：<https://www.dropbox.com/s/kb3p2mthei8dgl9/simulated_KAT-7_ms.tar.gz?dl=0>
 
-若确实需要这些历史数据，请将其解压到仓库内对应的 `data/` 子目录中。后续如继续维护，建议优先采用相对路径和可配置路径变量，不要在 notebook、脚本或文档中写死个人机器路径。
+若确实需要这些历史数据，可将其解压到仓库内对应的 `data/` 子目录中。后续如继续维护，建议优先采用相对路径和可配置路径变量，不要在 notebook、脚本或文档中写死个人机器路径。
 
 ## 维护与扩展
 
@@ -131,8 +132,8 @@ jupyter lab
 - 原始英文仓库：<https://github.com/griffinfoster/fundamentals_of_interferometry>
 - 原始课程网站：<https://ratt-ru.github.io/fundamentals_of_interferometry/>
 
-中文版本在此基础上持续重写、整理和扩展，力图形成一套更适合中文学习者的系统教程。
+中文版本在此基础上持续重写、整理和扩展，力图形成一套更适合中文教学与科研训练的系统教程。
 
 ## 许可证
 
-许可证信息请见 [LICENSE](LICENSE) 和 [LICENSE.md](LICENSE.md)。
+许可证信息见 [LICENSE](LICENSE) 和 [LICENSE.md](LICENSE.md)。
