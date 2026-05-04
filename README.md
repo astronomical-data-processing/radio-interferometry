@@ -50,6 +50,7 @@
 - 从图像到科学量：通量、亮温、上限、相关噪声与误差预算
 - 谱线物理量与运动学解释：速度约定、moment、柱密度、PV 图、beam smearing 与线宽修正
 - 偏振与 `Faraday` 诊断：Stokes、偏振统计、校准误差、`RMSF`、退偏振与复杂 Faraday 结构
+- 短间距、mosaicking 与联合成像：最大可恢复尺度、missing flux、feather、joint deconvolution 与通量恢复验证
 
 如果你只想从实践部分开始，建议直接阅读 [9_Practical/9_1_visualisation-inspection.ipynb](9_Practical/9_1_visualisation-inspection.ipynb)。
 

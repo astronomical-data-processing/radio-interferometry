@@ -103,11 +103,11 @@
 
 ### 7. 短间距、mosaicking 与联合成像
 
-第 9.10 已有短间距入口，后续应把它从概念说明扩展到真实判断：什么时候 missing flux 会影响科学结论，什么时候单碟或紧凑阵列数据是必要的，feather 和 joint deconvolution 的前提分别是什么。
+第 9.10 已有短间距入口。第 9.21 节已经补入第一版短间距、mosaicking 与联合成像案例，把概念说明扩展到真实判断：什么时候 missing flux 会影响科学结论，什么时候单碟或紧凑阵列数据是必要的，feather 和 joint deconvolution 的前提分别是什么。
 
-应补内容包括：最大可恢复尺度的近似公式和适用条件；primary beam、mosaic spacing 与灵敏度均匀性的关系；干涉阵和单碟在 Fourier 空间中的互补性；单碟 beam、通量尺度和 regridding 对 feather 的影响；多配置合并时权重重标定和 uv overlap 检查。
+已补内容包括：最大可恢复尺度的近似公式和适用条件；primary beam、mosaic spacing 与灵敏度均匀性的关系；干涉阵和单碟在 Fourier 空间中的互补性；单碟 beam、通量尺度和 regridding 对 feather 的影响；多配置合并时权重重标定和 uv overlap 检查。后续仍可在第 4 章补更严格的 uv 空间推导，在第 5 章补 joint mosaic imaging 的算法细节。
 
-推荐放置位置：第 4 章补 uv 空间图像，第 5 章补 mosaic 成像原理，第 9.10 补实践工作流。
+已放置位置：第 9.21 节作为实践章中的短间距和联合成像案例。后续理论图像可继续放在第 4 章，mosaic 成像原理可继续放在第 5 章。
 
 ### 8. 宽带、宽场与方向相关效应的算法层
 
