@@ -95,11 +95,11 @@
 
 ### 6. 偏振与 Faraday 诊断的完整链路
 
-偏振部分已经覆盖了 Stokes、leakage、RM synthesis 等入口，但可进一步强化真实校准与物理解释之间的联系。
+偏振部分已经覆盖了 Stokes、leakage、RM synthesis 等入口。第 9.20 节已经补入第一版偏振与 Faraday 诊断案例，把真实校准、偏振统计、RMSF 和物理解释连接起来。
 
-应补内容包括：线偏振和圆偏振基的差异；cross-hand delay/phase 的物理意义；D-term 与未校准 leakage 如何污染 Q/U/V；偏振角绝对校准；Faraday depth 与普通 RM 的关系；有限 $\lambda^2$ 覆盖带来的 RMSF、最大可探测 Faraday depth 和最大 Faraday 厚度；RM synthesis 中多分量、Faraday-thick 结构和去卷积的解释风险。
+已补内容包括：线偏振和圆偏振基的差异；cross-hand delay/phase 的物理意义；D-term 与未校准 leakage 如何污染 Q/U/V；偏振角绝对校准；Faraday depth 与普通 RM 的关系；有限 $\lambda^2$ 覆盖带来的 RMSF、最大可探测 Faraday depth 和最大 Faraday 厚度；RM synthesis 中多分量、Faraday-thick 结构和去卷积的解释风险。后续仍可在第 7.6 节补更系统的 RIME 偏振项推导，并在第 9.11 与 9.20 之间加入真实偏振校准日志的判读案例。
 
-推荐放置位置：第 7.6 节和第 9.9、9.11 节。
+已放置位置：第 9.20 节作为实践章中的偏振物理解释案例。后续理论推导可继续放在第 7.6 节，操作细节可继续回到第 9.9 和第 9.11 节补强。
 
 ### 7. 短间距、mosaicking 与联合成像
 
