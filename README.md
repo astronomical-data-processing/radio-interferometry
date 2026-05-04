@@ -59,6 +59,7 @@
 - Pipeline QA、`weblog` 与再处理决策：自动产品证据判读、归档数据重成像/重校准分支与 provenance
 - 最小可复现处理项目：项目目录模板、配置文件、依赖图、数据/软件/处理身份、验证门与连续谱再处理案例
 - 源表与检测产品验证：PyBDSF/SoFiA 检测产品、选择函数、完整性、可靠性、CARTA region 与发布样本分支
+- 最小可运行处理工作流：数据清单、校验和、环境记录、执行入口、失败重跑、运行报告与归档连续谱重跑包
 
 若只从实践部分开始，建议直接阅读 [9_Practical/9_1_visualisation-inspection.ipynb](9_Practical/9_1_visualisation-inspection.ipynb)。
 
