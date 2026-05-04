@@ -61,6 +61,7 @@
 - 源表与检测产品验证：PyBDSF/SoFiA 检测产品、选择函数、完整性、可靠性、CARTA region 与发布样本分支
 - 最小可运行处理工作流：数据清单、校验和、环境记录、执行入口、失败重跑、运行报告与归档连续谱重跑包
 - 公开归档数据复盘：科学目标到检索条件、metadata/weblog 证据板、最小重跑、产品差异审计与限制声明
+- 文件级示例仓库与发布包：清单契约、产品溯源图、验证门、失败样本与教学复盘循环
 
 若只从实践部分开始，建议直接阅读 [9_Practical/9_1_visualisation-inspection.ipynb](9_Practical/9_1_visualisation-inspection.ipynb)。
 
