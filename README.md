@@ -53,6 +53,7 @@
 - 短间距、mosaicking 与联合成像：最大可恢复尺度、missing flux、feather、joint deconvolution 与通量恢复验证
 - 宽带宽场算法边界：`MT-MFS`、主波束谱指数偏差、`w-term`、`A/AW-projection` 与方向相关校准
 - 观测设计与归档数据再分析：科学目标、频谱设置、校准节奏、`QA`、`weblog` 与 provenance
+- 软件生态与可复现实践：CASA、WSClean、DP3/DDFacet、CARTA、PyBDSF、SoFiA、Astropy 生态与 provenance
 
 如果你只想从实践部分开始，建议直接阅读 [9_Practical/9_1_visualisation-inspection.ipynb](9_Practical/9_1_visualisation-inspection.ipynb)。
 
