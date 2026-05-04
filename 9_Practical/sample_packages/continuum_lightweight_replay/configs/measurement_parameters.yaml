@@ -1,0 +1,6 @@
+measurement_region: regions/halo_region.reg
+units: Jy_per_beam
+include_correlated_noise: true
+include_flux_scale_error: true
+flux_scale_fractional_error: 0.05
+upper_limit_sigma: 3

@@ -1,0 +1,6 @@
+imaging_goal: low_surface_brightness_continuum
+weighting: natural
+uv_taper_arcsec: 30
+restored_beam_arcsec: [35.0, 32.0, -12.0]
+primary_beam_minimum: 0.30
+common_beam_required_for_comparison: true

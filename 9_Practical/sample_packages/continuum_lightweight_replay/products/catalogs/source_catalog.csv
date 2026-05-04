@@ -1,0 +1,4 @@
+source_id,x_pix,y_pix,peak_jy_beam,integrated_jy,local_rms_jy_beam,flag
+S1,37,56,0.55,0.61,0.019,science_masked_compact_source
+S2,61,48,0.09,0.18,0.022,diffuse_candidate
+S3,82,75,0.07,0.08,0.031,edge_check

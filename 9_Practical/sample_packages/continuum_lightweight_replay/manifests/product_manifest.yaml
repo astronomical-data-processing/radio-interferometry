@@ -1,0 +1,10 @@
+run_id: replay_sample_run_001
+products:
+  image: products/images/target_tapered_image.npy
+  residual: products/images/target_residual_image.npy
+  local_rms: products/images/local_rms_map.npy
+  catalog: products/catalogs/source_catalog.csv
+  region: regions/halo_region.reg
+checksums:
+  catalog: sha256:055a9758ea80901a487052097ec3d27aa523ced17ad40c4818e00448b44a76d9
+  region: sha256:e0eb24a8c3667ccd1f2b1d4246f76918a4cd9d07de0ba5f557fcd16d26348bb7

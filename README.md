@@ -17,14 +17,14 @@
 - [0_Introduction/0_introduction.ipynb](0_Introduction/0_introduction.ipynb)：总目录与阅读入口。
 - [0_Introduction/1_glossary.ipynb](0_Introduction/1_glossary.ipynb)：术语表。
 - `1_Radio_Science`：射电科学与基础天体物理背景。
-- `2_Mathematical_Groundwork`：傅里叶、采样、卷积、最小二乘等数学基础。
+- `2_Mathematical_Groundwork`：傅里叶、采样、卷积、最小二乘、统计不确定度、正则化与过拟合等数学基础。
 - `3_Positional_Astronomy`：位置天文学与坐标系统。
 - `4_Visibility_Space`：基线、可见度、UV 覆盖与 van Cittert-Zernike 定理。
 - `5_Imaging`：成像、权重、网格化、宽场效应。
 - `6_Deconvolution`：去卷积、CLEAN、残差与图像质量。
-- `7_Observing_Systems`：RIME、主波束、极化、传播效应、RFI 等观测系统问题。
-- `8_Calibration`：1GC、2GC、3GC 与校准主线。
-- `9_Practical`：现代实践工作流。
+- `7_Observing_Systems`：RIME、主波束、极化、传播效应、RFI、系统温度、SEFD、观测日志与 QA 等观测系统问题。
+- `8_Calibration`：1GC、2GC、3GC、校准退化、模型不完备与解可信度。
+- `9_Practical`：现代实践工作流、真实轻量样本包与项目练习材料。
 
 ## 第 9 章实践部分
 
@@ -65,6 +65,7 @@
 - 轻量样本数据集与练习包：科学不变量、平均/裁剪损失预算、练习分层、标准路径、盲测任务与失败对照
 - 处理报告与复查量规：证据主线、报告结构、误差预算、复查循环、常见失败模式与结论降级
 - 综合课程项目设计：科学问题、里程碑、能力评价、分层任务、项目库与低面亮度连续谱综合案例
+- 真实轻量样本包与项目练习材料：可分发 `npy` 图像、局部噪声图、源表、区域文件、manifest、QA 摘要、报告模板、复查量规与分层任务
 
 若只从实践部分开始，建议直接阅读 [9_Practical/9_1_visualisation-inspection.ipynb](9_Practical/9_1_visualisation-inspection.ipynb)。
 

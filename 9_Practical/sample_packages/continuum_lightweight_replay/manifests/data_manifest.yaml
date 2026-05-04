@@ -1,0 +1,17 @@
+sample_id: continuum_lightweight_replay_v1
+created_for: chapter_9_practical_training
+science_goal: low_surface_brightness_continuum_limit
+products:
+  - path: products/images/target_tapered_image.npy
+    role: restored_image
+    checksum: sha256:5b180ba28eab45167312f3c43fb99b676efbec962bf22d99ccbf4664b5ce1a6e
+  - path: products/images/target_residual_image.npy
+    role: residual_image
+    checksum: sha256:e2968f25d9375e957529073460f43c18c190704a66cb06143b74ea2400221057
+  - path: products/images/local_rms_map.npy
+    role: local_rms_map
+    checksum: sha256:347d1190637df65088aee03e45ff948a04fa562acbf6d4591cad6db251e63759
+limitations:
+  - no_full_measurement_set
+  - no_recalibration_from_raw_visibilities
+  - no_spectral_index_measurement
