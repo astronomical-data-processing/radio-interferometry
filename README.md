@@ -43,6 +43,7 @@
 - 交叉手相位校准与 `RM synthesis`
 - 宽场方向相关成像
 - 高级谱线分析：`3D mask`、source finding、组件目录、`PV ridge` 与简化运动学拟合
+- 端到端连续谱教学案例：从数据检查、校准、成像、自校准到通量测量与误差预算
 
 如果你只想从实践部分开始，建议直接阅读 [9_Practical/9_1_visualisation-inspection.ipynb](9_Practical/9_1_visualisation-inspection.ipynb)。
 
@@ -92,9 +93,7 @@ jupyter lab
 如果后续继续扩展本项目，建议先阅读以下文档：
 
 - [Roadmap.md](Roadmap.md)：全书后续补强方向。
-- [Chapter7_Handover.md](Chapter7_Handover.md)：第 7 章交接说明。
-- [Chapter8_Handover.md](Chapter8_Handover.md)：第 8 章交接说明。
-- [Chapter9_Handover.md](Chapter9_Handover.md)：第 9 章交接说明。
+- [0_Introduction/editing_guide.ipynb](0_Introduction/editing_guide.ipynb)：编辑参考。
 
 与当前仓库状态直接相关的维护约定包括：
 
@@ -103,11 +102,12 @@ jupyter lab
 - 实践页优先解释“这一步解决什么问题”，而不是简单堆命令。
 - 程序、脚本、notebook 和文档中不要写死个人机器上的绝对路径，例如 `/home/username/...`。
 
-第 9 章的实践 notebook 目前由生成脚本统一维护：
+第 8、9 章的部分重写工作曾使用生成脚本辅助完成：
 
+- [tools/rebuild_chapter8_notebooks.py](tools/rebuild_chapter8_notebooks.py)
 - [tools/rebuild_chapter9_notebooks.py](tools/rebuild_chapter9_notebooks.py)
 
-如果修改了第 9 章的实践内容，建议通过该脚本重建相关 notebook。
+当前教材化版本以仓库中的 `.ipynb` 和静态图为准。若继续使用或修改生成脚本，需要先确认脚本不会重新引入已移除的旧式代码单元、HTML toggle 或与当前导航不一致的内容。
 
 ## 风格与编辑入口
 
