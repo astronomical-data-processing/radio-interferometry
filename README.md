@@ -56,6 +56,7 @@
 - 软件生态与可复现实践：CASA、WSClean、DP3/DDFacet、CARTA、PyBDSF、SoFiA、Astropy 生态与 provenance
 - VLBI 实践入口：延迟模型、`fringe fitting`、相位参考、SEFD 定标、天体测量与紧致源成像
 - 低频与高频特殊观测体制：电离层、RFI、宽场 DDE、对流层相干时间、opacity、`Tsys` 与快速相位校准
+- Pipeline QA、`weblog` 与再处理决策：自动产品证据判读、归档数据重成像/重校准分支与 provenance
 
 若只从实践部分开始，建议直接阅读 [9_Practical/9_1_visualisation-inspection.ipynb](9_Practical/9_1_visualisation-inspection.ipynb)。
 
