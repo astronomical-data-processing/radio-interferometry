@@ -18,10 +18,10 @@
 - [0_Introduction/1_glossary.ipynb](0_Introduction/1_glossary.ipynb)：术语表。
 - `1_Radio_Science`：射电科学与基础天体物理背景。
 - `2_Mathematical_Groundwork`：傅里叶、采样、卷积、最小二乘、统计不确定度、正则化与过拟合等数学基础。
-- `3_Positional_Astronomy`：位置天文学与坐标系统。
-- `4_Visibility_Space`：基线、可见度、UV 覆盖与 van Cittert-Zernike 定理。
-- `5_Imaging`：成像、权重、网格化、宽场效应。
-- `6_Deconvolution`：去卷积、CLEAN、残差与图像质量。
+- `3_Positional_Astronomy`：位置天文学、坐标系统、时间标准、参考系与精密天体测量边界。
+- `4_Visibility_Space`：基线、可见度、UV 覆盖、van Cittert-Zernike 定理、闭合量、缺短间距与 mosaicking。
+- `5_Imaging`：成像、权重、网格化、宽场效应与成像参数选择。
+- `6_Deconvolution`：去卷积、CLEAN、残差、图像质量、源搜索、正则化去卷积与残差统计。
 - `7_Observing_Systems`：RIME、主波束、极化、传播效应、RFI、系统温度、SEFD、观测日志与 QA 等观测系统问题。
 - `8_Calibration`：1GC、2GC、3GC、校准退化、模型不完备与解可信度。
 - `9_Practical`：现代实践工作流、真实轻量样本包与项目练习材料。
