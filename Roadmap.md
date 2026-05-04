@@ -87,11 +87,11 @@
 
 ### 5. 谱线处理的物理建模层
 
-第 1 章和第 9 章已经建立了谱线基础与高级入口。下一步应把谱线工作流从“做出 cube、moment map、PV 图”推进到“怎样解释这些图”。这部分尤其适合连接本科高年级、硕士和博士层次。
+第 1 章和第 9 章已经建立了谱线基础与高级入口。第 9.19 节已经补入第一版谱线物理量与运动学解释，把谱线工作流从“做出 cube、moment map、PV 图”推进到“怎样解释这些图”。这部分尤其适合连接本科高年级、硕士和博士层次。
 
-应补内容包括：频率、速度和参考系的转换；radio/optical/relativistic velocity convention 的差异；channel width、spectral resolution 与 Hanning smoothing；continuum subtraction 在 uv 域与 image 域的差异；mask 对 moment 的选择效应；PV 图中投影、beam smearing 与真实旋转曲线的区别；线轮廓拟合、积分通量、柱密度或分子气体质量估计中的主要系统误差。
+已补内容包括：频率、速度和参考系的转换；radio/optical/relativistic velocity convention 的差异；channel width、spectral resolution 与 Hanning smoothing；mask 对 moment 的选择效应；PV 图中投影、beam smearing 与真实旋转曲线的区别；线宽、积分通量、柱密度和 H I 气体质量估计中的主要系统误差。后续仍可继续补 uv 域与 image 域连续谱扣除的更细对比、分子线激发和 CO-to-H2 转换、以及面向真实 cube 的 SoFiA 参数案例。
 
-推荐放置位置：第 1.7 节补物理背景，第 9.7 和 9.13 补数据分析。
+已放置位置：第 9.19 节作为实践章中的谱线物理解释案例。后续若继续加厚，可在第 1.7 节补更系统的谱线物理背景，并在第 9.7、9.13 和 9.19 之间形成从 cube 处理到物理建模的交叉引用。
 
 ### 6. 偏振与 Faraday 诊断的完整链路
 

@@ -48,6 +48,7 @@
 - 成像参数选择：cell size、image size、weighting、taper、mask 与 QA 闭环
 - QA 与失败模式识别：从原始数据、校准解到图像伪影的因果诊断
 - 从图像到科学量：通量、亮温、上限、相关噪声与误差预算
+- 谱线物理量与运动学解释：速度约定、moment、柱密度、PV 图、beam smearing 与线宽修正
 
 如果你只想从实践部分开始，建议直接阅读 [9_Practical/9_1_visualisation-inspection.ipynb](9_Practical/9_1_visualisation-inspection.ipynb)。
 
