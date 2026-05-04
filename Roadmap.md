@@ -111,11 +111,11 @@
 
 ### 8. 宽带、宽场与方向相关效应的算法层
 
-当前第 5、7、8、9 章已形成基础链路，后续可进一步解释现代 wideband/widefield imaging 的算法边界。
+当前第 5、7、8、9 章已形成基础链路。第 9.22 节已经补入第一版宽带宽场算法边界案例，进一步解释现代 wideband/widefield imaging 的算法边界。
 
-应补内容包括：MT-MFS 中 Taylor 展开的假设；spectral index 与 curvature 的拟合风险；w-projection、faceting、w-stacking 的概念对比；A-projection/AW-projection 与 primary beam 模型；方向相关自校准的自由度增长、解区划分和过拟合风险；低频电离层屏幕和高频 pointing/atmosphere 误差为何表现不同。
+已补内容包括：MT-MFS 中 Taylor 展开的假设；spectral index 与 curvature 的拟合风险；w-projection、faceting、w-stacking 的概念对比；A-projection/AW-projection 与 primary beam 模型；方向相关自校准的自由度增长、解区划分和过拟合风险；低频电离层屏幕和高频 pointing/atmosphere 误差为何表现不同。后续仍可在第 5.5 节继续加深测量方程推导，并在第 8.4 节补方向相关校准的算法细节。
 
-推荐放置位置：第 5.5、7.5、8.4、9.8、9.12。
+已放置位置：第 9.22 节作为实践章中的宽带宽场算法边界案例。后续理论和算法细节可继续放在第 5.5、7.5、8.4、9.8、9.12。
 
 ### 9. 观测设计与归档数据使用
 
