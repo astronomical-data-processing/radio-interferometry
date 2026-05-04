@@ -75,11 +75,13 @@
 
 教材若停在 restored image，就还没有真正到达科学结果。后续应补强“图像产品怎样变成通量、谱指数、亮温、线宽、质量、偏振角、RM 或源表”的过程。
 
-应补内容包括：Jy/beam 与 Jy/pixel、K 之间的转换；点源和扩展源通量测量的差异；beam-aware aperture photometry；局部背景估计；rms 与 correlated noise；upper limit 的给法；谱线 cube 中 moment map、mask、linewidth、integrated flux 的不确定度传播；偏振强度的 Ricean bias 与角度误差；频谱指数图中主波束和 uv 覆盖差异引入的偏差。
+应补内容包括：Jy/beam 与 Jy/pixel、K 之间的转换；点源和扩展源通量测量的差异；beam-aware aperture photometry；局部背景估计；rms 与 correlated noise；upper limit 的给法；连续谱源搜索与源表生成；谱线 cube 中 moment map、mask、linewidth、integrated flux 的不确定度传播；偏振强度的 Ricean bias 与角度误差；频谱指数图中主波束和 uv 覆盖差异引入的偏差。
+
+连续谱源表部分应明确纳入 PyBDSF。PyBDSF 的教学价值不只是“自动找源”，而是把背景/RMS 估计、island detection、Gaussian decomposition、deblending、残差检查和源表质量控制连成一条可训练的测量链。第 6.5 节已有源搜索的基本原理，后续可增加一个 PyBDSF 风格案例：同一幅图像在不同阈值、局部 RMS box、island/growth threshold 和高斯分解策略下，源表的 completeness、reliability、峰值通量、积分通量和残差图如何变化。
 
 推荐放置位置：第 6 章和第 9 章共同补强，第 1 章的辐射量也可增加反向链接。
 
-需要图示：beam 与 aperture 的关系、噪声相关尺度、moment map 的 mask 选择效果、误差从 channel map 传播到 integrated flux 的流程图。
+需要图示：beam 与 aperture 的关系、噪声相关尺度、PyBDSF 风格的背景/RMS 图、island 与 Gaussian component/source 层级图、不同阈值下的源表差异、moment map 的 mask 选择效果、误差从 channel map 传播到 integrated flux 的流程图。
 
 ## P1：专题深挖，但仍尽量嵌入现有章节
 
@@ -139,9 +141,11 @@ VLBI 与普通连通阵列共享可见度语言，但在时频标准、相关、
 
 ### 12. 软件生态与可复现实践
 
-现代训练越来越重视软件生态，而不是单一命令集合。未来可补一份面向中文教材的工具地图，解释 CASA、WSClean、DP3、DDFacet、CARTA、SoFiA、Astropy/Radio-beam 等工具各自解决什么问题。
+现代训练越来越重视软件生态，而不是单一命令集合。未来可补一份面向中文教材的工具地图，解释 CASA、WSClean、DP3、DDFacet、CARTA、PyBDSF、SoFiA、Astropy/Radio-beam 等工具各自解决什么问题。
 
 最低内容应包括：工具链分层，数据格式转换，版本记录，参数文件，日志和 provenance，轻量示例数据，结果复现脚本，以及为什么不能把个人机器路径写进 notebook。
+
+其中 PyBDSF 应放在“图像产品到连续谱源表”的层级，而不是放在校准或成像器层级。它适合承担以下教学任务：从 restored image 和 residual image 估计局部背景与局部 RMS；用像素阈值和 island 阈值构造候选区域；把 island 分解为 Gaussian components 并合并为 sources；输出源表、模型图和残差图；讨论展源、多分量射电星系、亮源旁瓣、主波束边缘和非均匀噪声对源表可靠性的影响。PyBDSF 的官方文档可见：<https://pybdsf.readthedocs.io/>。SoFiA 则更适合放在谱线 cube 的三维 source finding 层级，两者应并列但不要混用。
 
 ## 逐章补强建议
 
@@ -157,11 +161,15 @@ VLBI 与普通连通阵列共享可见度语言，但在时频标准、相关、
 
 第 6 章可补多尺度、多频率、正则化成像和残差统计。CLEAN 不是唯一反演思想，教材可以适度引入最大熵、压缩感知或 Bayesian imaging 的概念，但应保持与主线的距离，不抢占基础内容。
 
+第 6.5 节源搜索可进一步补一个 PyBDSF 风格的连续谱源表案例。重点不是复述软件参数，而是把局部 RMS、island、Gaussian component、source、residual image 和 catalogue validation 讲成一条测量链，说明为什么源表不是“阈值切割后的坐标列表”。
+
 第 7 章可补系统温度、SEFD、数据率、时频稳定性和观测日志如何进入数据质量判断。这样仪器章节会更自然地连接到第 9 章实践。
 
 第 8 章可补退化、参考天线、通量尺度、模型不完备、解间隔选择、方向相关自由度和过拟合风险。这些内容是把校准从“求解增益”讲到“知道解是否可信”的关键。
 
 第 9 章可继续作为实践总枢纽，补端到端案例、QA 案例库、参数实验、科学测量和归档数据再处理。第 9 章不宜变成软件手册，而应始终解释“这一步在物理和统计上解决什么问题”。
+
+第 9 章后续可在 9.14 或新增实践页中补“连续谱源表生成”小案例：先用简化算法展示阈值、局部 RMS 和高斯拟合，再映射到 PyBDSF 的 `process_image`、catalogue export、model/residual image、parameter save file 和批处理脚本。案例应比较至少两组参数，并用残差图、负源统计、注入源恢复率或人工检查小样本来训练源表质量判断。
 
 ## 实施顺序
 
@@ -170,7 +178,7 @@ VLBI 与普通连通阵列共享可见度语言，但在时频标准、相关、
 1. 在第 9.14 节已有端到端小型案例的基础上，继续加厚真实 QA、真实参数选择和真实测量误差。
 2. 同步加厚第 5 章和第 9 章的成像参数选择，形成可直接指导实践的决策树。
 3. 补第 7、8、9 章的 QA 与错误识别，把坏数据、坏校准和坏图像串起来。
-4. 加深第 9 章“从图像到科学量”的测量链，尤其是不确定度传播。
+4. 加深第 9 章“从图像到科学量”的测量链，尤其是不确定度传播，并加入 PyBDSF 风格的连续谱源表案例。
 5. 再分别加厚谱线、偏振、短间距和宽带宽场四个专题。
 6. 最后考虑 VLBI、低频/高频特殊体制、archive/pipeline、软件生态等可独立专题。
 
@@ -182,7 +190,7 @@ VLBI 与普通连通阵列共享可见度语言，但在时频标准、相关、
 
 案例应有明确的针对性。面向本科高年级的版本应强调物理图像、量纲、数量级和可视化结果；面向硕士的版本应加入参数选择、误差来源和流程诊断；面向博士或研究训练的版本应进一步加入模型不完备、系统误差、不确定度传播和科学结论的边界。这样同一主题可以形成浅、中、深三个层次，而不需要为每个层次另起一套完全不同的材料。
 
-案例也应具有实用性。优先选择真实研究中高频出现的问题，例如 flagging 后 uv 覆盖改变、校准源解不稳定、self-cal 过拟合、CLEAN mask 选择、primary beam 边缘噪声放大、missing flux、spectral cube mask、RM synthesis 分辨率限制等。每个案例都应尽量给出可运行的小型版本，并在末尾说明它对应到 CASA、WSClean、CARTA、SoFiA 或其他真实软件工作流时需要注意什么。
+案例也应具有实用性。优先选择真实研究中高频出现的问题，例如 flagging 后 uv 覆盖改变、校准源解不稳定、self-cal 过拟合、CLEAN mask 选择、primary beam 边缘噪声放大、missing flux、continuum source finding、spectral cube mask、RM synthesis 分辨率限制等。每个案例都应尽量给出可运行的小型版本，并在末尾说明它对应到 CASA、WSClean、CARTA、PyBDSF、SoFiA 或其他真实软件工作流时需要注意什么。
 
 图示应服务判断，而不只是装饰。优先使用能够对比不同选择后果的静态 PNG 图，例如同一数据在不同 robust 参数下的 PSF 与噪声、不同 mask 下的 moment map、不同 flagging 程度下的校准解、不同短间距补偿方式下的 flux recovery。图注应说明图中要判断的量，而不仅是描述图中有什么。
 
