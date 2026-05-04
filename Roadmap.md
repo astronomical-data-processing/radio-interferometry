@@ -77,7 +77,7 @@
 
 应补内容包括：Jy/beam 与 Jy/pixel、K 之间的转换；点源和扩展源通量测量的差异；beam-aware aperture photometry；局部背景估计；rms 与 correlated noise；upper limit 的给法；连续谱源搜索与源表生成；谱线 cube 中 moment map、mask、linewidth、integrated flux 的不确定度传播；偏振强度的 Ricean bias 与角度误差；频谱指数图中主波束和 uv 覆盖差异引入的偏差。
 
-连续谱源表部分应明确纳入 PyBDSF。PyBDSF 的教学价值不只是“自动找源”，而是把背景/RMS 估计、island detection、Gaussian decomposition、deblending、残差检查和源表质量控制连成一条可训练的测量链。第 6.5 节已有源搜索的基本原理，后续可增加一个 PyBDSF 风格案例：同一幅图像在不同阈值、局部 RMS box、island/growth threshold 和高斯分解策略下，源表的 completeness、reliability、峰值通量、积分通量和残差图如何变化。
+连续谱源表部分应明确纳入 PyBDSF。PyBDSF 的教学价值不只是“自动找源”，而是把背景/RMS 估计、island detection、Gaussian decomposition、deblending、残差检查和源表质量控制连成一条可训练的测量链。第 6.5 节已有源搜索的基本原理，第 9.15 节已建立第一版 PyBDSF 风格案例：同一幅图像在不同阈值、局部 RMS box、island/growth threshold 和高斯分解策略下，源表的 completeness、reliability、峰值通量、积分通量和残差图如何变化。
 
 推荐放置位置：第 6 章和第 9 章共同补强，第 1 章的辐射量也可增加反向链接。
 
@@ -161,15 +161,15 @@ VLBI 与普通连通阵列共享可见度语言，但在时频标准、相关、
 
 第 6 章可补多尺度、多频率、正则化成像和残差统计。CLEAN 不是唯一反演思想，教材可以适度引入最大熵、压缩感知或 Bayesian imaging 的概念，但应保持与主线的距离，不抢占基础内容。
 
-第 6.5 节源搜索可进一步补一个 PyBDSF 风格的连续谱源表案例。重点不是复述软件参数，而是把局部 RMS、island、Gaussian component、source、residual image 和 catalogue validation 讲成一条测量链，说明为什么源表不是“阈值切割后的坐标列表”。
+第 6.5 节源搜索已补入 PyBDSF 风格的连续谱源表说明。后续若继续加厚，重点不是复述软件参数，而是把局部 RMS、island、Gaussian component、source、residual image 和 catalogue validation 讲成一条测量链，说明为什么源表不是“阈值切割后的坐标列表”。
 
 第 7 章可补系统温度、SEFD、数据率、时频稳定性和观测日志如何进入数据质量判断。这样仪器章节会更自然地连接到第 9 章实践。
 
 第 8 章可补退化、参考天线、通量尺度、模型不完备、解间隔选择、方向相关自由度和过拟合风险。这些内容是把校准从“求解增益”讲到“知道解是否可信”的关键。
 
-第 9 章可继续作为实践总枢纽，补端到端案例、QA 案例库、参数实验、科学测量和归档数据再处理。第 9 章不宜变成软件手册，而应始终解释“这一步在物理和统计上解决什么问题”。
+第 9 章可继续作为实践总枢纽，补端到端案例、连续谱源表、QA 案例库、参数实验、科学测量和归档数据再处理。第 9 章不宜变成软件手册，而应始终解释“这一步在物理和统计上解决什么问题”。
 
-第 9 章后续可在 9.14 或新增实践页中补“连续谱源表生成”小案例：先用简化算法展示阈值、局部 RMS 和高斯拟合，再映射到 PyBDSF 的 `process_image`、catalogue export、model/residual image、parameter save file 和批处理脚本。案例应比较至少两组参数，并用残差图、负源统计、注入源恢复率或人工检查小样本来训练源表质量判断。
+第 9.15 节已建立“连续谱源表生成”小案例：先用简化算法展示阈值、局部 RMS 和高斯拟合，再映射到 PyBDSF 的 `process_image`、catalogue export、model/residual image、parameter save file 和批处理脚本。后续可继续加入注入源恢复率、人工检查小样本和真实 PyBDSF 参数文件，进一步训练源表质量判断。
 
 ## 实施顺序
 
@@ -178,7 +178,7 @@ VLBI 与普通连通阵列共享可见度语言，但在时频标准、相关、
 1. 在第 9.14 节已有端到端小型案例的基础上，继续加厚真实 QA、真实参数选择和真实测量误差。
 2. 同步加厚第 5 章和第 9 章的成像参数选择，形成可直接指导实践的决策树。
 3. 补第 7、8、9 章的 QA 与错误识别，把坏数据、坏校准和坏图像串起来。
-4. 加深第 9 章“从图像到科学量”的测量链，尤其是不确定度传播，并加入 PyBDSF 风格的连续谱源表案例。
+4. 在第 9.15 节已有 PyBDSF 风格连续谱源表案例的基础上，继续加深“从图像到科学量”的测量链，尤其是不确定度传播、注入源恢复和目录可靠性验证。
 5. 再分别加厚谱线、偏振、短间距和宽带宽场四个专题。
 6. 最后考虑 VLBI、低频/高频特殊体制、archive/pipeline、软件生态等可独立专题。
 

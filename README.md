@@ -44,6 +44,7 @@
 - 宽场方向相关成像
 - 高级谱线分析：`3D mask`、source finding、组件目录、`PV ridge` 与简化运动学拟合
 - 端到端连续谱教学案例：从数据检查、校准、成像、自校准到通量测量与误差预算
+- 连续谱源表生成：PyBDSF 风格的图像到目录流程
 
 如果你只想从实践部分开始，建议直接阅读 [9_Practical/9_1_visualisation-inspection.ipynb](9_Practical/9_1_visualisation-inspection.ipynb)。
 
