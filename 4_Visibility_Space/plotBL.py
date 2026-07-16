@@ -78,7 +78,9 @@ def sphere(ant1,ant2,A,E,D,L):
     ax.set_aspect("equal")
     plt.tight_layout()
 
-def makecubeplot(u,v,w):
+def makecubeplot(u,v,w,ax=None):
+    if ax is None:
+        ax = plt.gca()
     max_range = np.array([u.max()-u.min(), v.max()-v.min(), w.max()-w.min()]).max()
     Ub = 0.5*max_range*np.mgrid[-1:2:2,-1:2:2,-1:2:2][0].flatten() + 0.5*(u.max()+u.min())
     Vb = 0.5*max_range*np.mgrid[-1:2:2,-1:2:2,-1:2:2][1].flatten() + 0.5*(v.max()+v.min())

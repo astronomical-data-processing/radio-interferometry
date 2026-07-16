@@ -1,6 +1,8 @@
 measurement_region: regions/halo_region.reg
+region_coordinate_origin: 1
+compact_source_mask_radius_pix: 14
 units: Jy_per_beam
 include_correlated_noise: true
 include_flux_scale_error: true
 flux_scale_fractional_error: 0.05
-upper_limit_sigma: 3
+sensitivity_sigma: 3

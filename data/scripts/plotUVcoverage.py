@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 """Plot UVW positions from an MS"""
 
 import matplotlib
@@ -45,7 +45,7 @@ if __name__ == '__main__':
                 uvdist.append(np.sqrt( ((uvw[:,0] / wl)**2) + ((uvw[:,1] / wl)**2) ))
             uvdist = np.array(uvdist).flatten()
             plt.hist(uvdist, bins=50, alpha=.5)
-            plt.xlabel('uv Distance ($\lambda$)', fontsize=20)
+            plt.xlabel(r'uv Distance ($\lambda$)', fontsize=20)
         else:
             uvdist = np.sqrt((uvw[:,0]**2) + (uvw[:,1]**2))
             plt.hist(uvdist, bins=50, alpha=.5)
@@ -57,17 +57,17 @@ if __name__ == '__main__':
         if opts.freqs:
             if len(freqs)==1:
                 wl = cc/freqs[0]
-                plt.scatter(uvw[:,0]/wl, uvw[:,1]/wl, marker='s', edgecolor='none', c=(0.0,0.0,1.0), alpha=0.25)
-                plt.scatter(-1.*uvw[:,0]/wl, -1.*uvw[:,1]/wl, marker='s', edgecolor='none', c=(0.0,0.0,1.0), alpha=0.25)
+                plt.scatter(uvw[:,0]/wl, uvw[:,1]/wl, marker='s', edgecolor='none', color=(0.0,0.0,1.0), alpha=0.25)
+                plt.scatter(-1.*uvw[:,0]/wl, -1.*uvw[:,1]/wl, marker='s', edgecolor='none', color=(0.0,0.0,1.0), alpha=0.25)
             else:
                 crange = freqs - np.min(freqs)
                 crange /= np.max(crange)
                 for color,freq in zip(crange,freqs):
                     wl = cc/freq
-                    plt.scatter(uvw[:,0]/wl, uvw[:,1]/wl, marker='s', edgecolor='none', c=(1.0-color,0.0,color), alpha=0.25)
-                    plt.scatter(-1.*uvw[:,0]/wl, -1.*uvw[:,1]/wl, marker='s', edgecolor='none', c=(1.0-color,0.0,color), alpha=0.25)
-            plt.xlabel("uu ($\lambda$)", fontsize=20)
-            plt.ylabel("vv ($\lambda$)", fontsize=20)
+                    plt.scatter(uvw[:,0]/wl, uvw[:,1]/wl, marker='s', edgecolor='none', color=(1.0-color,0.0,color), alpha=0.25)
+                    plt.scatter(-1.*uvw[:,0]/wl, -1.*uvw[:,1]/wl, marker='s', edgecolor='none', color=(1.0-color,0.0,color), alpha=0.25)
+            plt.xlabel(r"uu ($\lambda$)", fontsize=20)
+            plt.ylabel(r"vv ($\lambda$)", fontsize=20)
         else:
             plt.plot(uvw[:,0], uvw[:,1], 'k.')
             plt.plot(-1.*uvw[:,0], -1.*uvw[:,1], 'k.')
@@ -85,4 +85,3 @@ if __name__ == '__main__':
 
     if opts.savefig: plt.savefig(opts.savefig)
     else: plt.show()
-

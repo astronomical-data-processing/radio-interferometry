@@ -6,7 +6,6 @@ def convert(fileitrf, save_enu=True, plot=False):
     
     import numpy as np
     import pyrap.quanta
-    import ipdb
     import matplotlib.pyplot as plt
     from pyrap.measures import measures
     import os
@@ -30,7 +29,7 @@ def convert(fileitrf, save_enu=True, plot=False):
     dm = measures()
     dq = pyrap.quanta
     DEG = 180./np.pi
-    EarthRad=6471.
+    EarthRad=6371.0088
   
     deg2m = 2*np.pi*EarthRad/360. # Arc length subtended by 1 deg at Earth Radius distance
     #ipdb.set_trace()

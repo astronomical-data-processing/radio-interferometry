@@ -18,12 +18,12 @@
 - [0_Introduction/1_glossary.ipynb](0_Introduction/1_glossary.ipynb)：术语表。
 - `1_Radio_Science`：射电科学与基础天体物理背景。
 - `2_Mathematical_Groundwork`：傅里叶、采样、卷积、最小二乘、统计不确定度、正则化与过拟合等数学基础。
-- `3_Positional_Astronomy`：位置天文学、坐标系统、时间标准、参考系与精密天体测量边界。
+- `3_Positional_Astronomy`：位置天文学、坐标系统、时间标准、参考系与精密天体测量边界；另有[定量问题集](3_Positional_Astronomy/3_problem_set.ipynb)。
 - `4_Visibility_Space`：基线、可见度、UV 覆盖、van Cittert-Zernike 定理、闭合量、缺短间距与 mosaicking。
 - `5_Imaging`：成像、权重、网格化、宽场效应与成像参数选择。
 - `6_Deconvolution`：去卷积、CLEAN、残差、图像质量、源搜索、正则化去卷积与残差统计。
-- `7_Observing_Systems`：RIME、主波束、极化、传播效应、RFI、系统温度、SEFD、观测日志与 QA 等观测系统问题。
-- `8_Calibration`：1GC、2GC、3GC、校准退化、模型不完备与解可信度。
+- `7_Observing_Systems`：RIME、主波束、极化、传播效应、RFI、系统温度、SEFD、观测日志与 QA；另有[定量问题集](7_Observing_Systems/7_problem_set.ipynb)。
+- `8_Calibration`：1GC、2GC、3GC、校准退化、模型不完备与解可信度；[校准习题](8_Calibration/8_problem_set.ipynb)包含可执行增益求解实验。
 - `9_Practical`：现代实践工作流、真实轻量样本包与项目练习材料。
 
 ## 第 9 章实践部分
@@ -79,25 +79,36 @@
 
 如果只是局部查阅，也建议先看术语表和相关章节目录，避免不同章节之间的符号、术语和约定脱节。
 
+## 适用层次
+
+- 本科高年级读者可以把第 1 至第 7 章作为主线，重点掌握辐射量、傅里叶分析、坐标系统、可见度、成像、去卷积和 RIME。
+- 硕士阶段读者应继续完成第 8 章校准习题，并在第 9 章中选择连续谱、谱线、偏振或宽场专题形成项目报告。
+- 博士阶段或研究训练不能只阅读流程说明，还应使用真实 Measurement Set、校准表、weblog 或公开归档产品复现至少一条完整处理链。
+
+当前理论主线已经达到本科高年级教材所需的覆盖和数学深度；第 3、7 章已有综合定量问题集，第 8 章已有可执行校准实验。研究生和研究训练层次的主要缺口已转为真实 Measurement Set 上的纵向校准、成像与 QA，而不是继续增加专题标题。详细判断见 [Roadmap.md](Roadmap.md)。
+
 ## 运行方式
 
-本仓库以 Notebook 为主，推荐使用 Python 3 和 Jupyter 环境。
+本仓库以 Notebook 为主，要求 Python 3.10 或更高版本，并推荐使用隔离的虚拟环境。
 
-最基础的打开方式通常是：
+最基础的打开方式是：
 
 ```bash
-python -m pip install jupyter numpy matplotlib
-jupyter lab
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install -r requirements.txt
+python3 -m jupyter lab
 ```
 
 然后从仓库根目录打开对应的 `.ipynb` 文件即可。
 
 需要说明的是：
 
-- 当前重写后的很多实践 notebook，特别是第 9 章的大部分页面，已经尽量做到自包含，并优先使用 `numpy` 与 `matplotlib` 进行可运行演示。
+- 第 1 至第 6 章保留了较多可运行的数值演示；第 7 章提供系统与 RIME 定量问题集，第 8 章提供可执行复增益求解实验，第 9.36 节及其轻量样本包提供文件核验、区域测量与误差预算路径。
 - 部分历史页面、遗留示例或外部数据案例，仍可能需要额外依赖或数据文件。
 - 当前的 [requirements.txt](requirements.txt) 已经整理为“当前基础依赖列表”，适合作为仓库的默认安装入口；但它仍不是严格锁定版本的可复现实验环境文件。
 - 目前已确认 `ephem`、`healpy` 和 `aplpy` 都不再是当前仓库的活动依赖。
+- `itrf2enu.py` 和历史 Measurement Set 绘图脚本还需要可选的 `python-casacore`；WSClean、CASA、Pyxis/Tigger 等外部射电软件不属于基础 Python 依赖。
 
 ## 数据文件说明
 
@@ -147,4 +158,4 @@ jupyter lab
 
 ## 许可证
 
-许可证信息见 [LICENSE](LICENSE) 和 [LICENSE.md](LICENSE.md)。
+本项目采用 [GNU General Public License v3.0](LICENSE)。

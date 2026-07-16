@@ -1,11 +1,15 @@
-# 说明：
-# - 这是当前仓库的基础依赖列表，不是严格锁定版本的 lockfile。
-# - 第 8、9 章大量重写后的 notebook 主要依赖 numpy、matplotlib 和 Jupyter。
-# - astropy 与 scipy 用于支持部分理论章节、历史示例和 FITS 读写。
+# Python 3.10+ runtime dependencies.
+#
+# These are the direct dependencies used by the notebooks and teaching
+# modules. Version ranges keep the environment installable across supported
+# Python 3 releases while preventing incompatible major-version upgrades.
 
-jupyter
-numpy
-matplotlib
-scipy
-astropy
-ipywidgets
+jupyterlab>=4.2,<5
+notebook>=7.2,<8
+ipython>=8.18,<10
+numpy>=2.0,<3
+matplotlib>=3.9,<4
+scipy>=1.13,<2
+astropy>=6.1,<9
+ipywidgets>=8.1,<9
+pyyaml>=6,<7

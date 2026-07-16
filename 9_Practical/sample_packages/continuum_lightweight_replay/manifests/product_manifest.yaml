@@ -5,6 +5,24 @@ products:
   local_rms: products/images/local_rms_map.npy
   catalog: products/catalogs/source_catalog.csv
   region: regions/halo_region.reg
+  analysis_script: analyze_sample.py
+  imaging_config: configs/imaging_parameters.yaml
+  measurement_config: configs/measurement_parameters.yaml
+  standard_task: tasks/standard_path.md
+  blind_task: tasks/blind_task.md
+  failure_contrasts: tasks/failure_contrasts.md
+  report_template: reports/report_template.md
+  review_rubric: reports/review_rubric.md
+  qa_summary: validation/qa_summary.md
 checksums:
   catalog: sha256:055a9758ea80901a487052097ec3d27aa523ced17ad40c4818e00448b44a76d9
   region: sha256:e0eb24a8c3667ccd1f2b1d4246f76918a4cd9d07de0ba5f557fcd16d26348bb7
+  analysis_script: sha256:6cf12a653aefab992d79f93a6711af3278b7d05c13bf0c6beda2b4eccb2be4a8
+  imaging_config: sha256:60458b59a7109468296c9ec4254d273967c53ffcbe583d4bb641fe62ddcee8ab
+  measurement_config: sha256:629601dc1319851512eba213475e3f2b4e8771d4d3b1bf80dc8586711b0a035f
+  standard_task: sha256:c8be246aa38772567e1c551f5956ab3401fbf292d16e50629cbd06afce82fbd2
+  blind_task: sha256:5147a2409acc2c64948377da8ef27f44a6215ec300987d8c1452dd885f5b7364
+  failure_contrasts: sha256:aed3c147f35f8fc802ef48acc1147f628b7cac7a44fe86e8b07fcaacc8ba1b62
+  report_template: sha256:a2269deaad26fbc98542b363761068a57ca522018f57473836fd916072139587
+  review_rubric: sha256:c5be064e2250233a8e4319e40ee9d23955d07448979c0862177eba61e4500506
+  qa_summary: sha256:7b49d6aebfe49b3e3d7082a299ccd099f049f0315d1cffbec2882261442f1180

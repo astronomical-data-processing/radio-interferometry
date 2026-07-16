@@ -3,8 +3,8 @@ import numpy as np
 from rime_lib import KAT7_antenna_uvw, rime
 
 # Define our sources in this array, each row has the form
-# [l, m, I, Q, U, V] with l and m in degrees and stokes
-# parameters in Jy
+# [RA, Dec, I, Q, U, V], with coordinates in degrees and
+# Stokes parameters in Jy. The first row defines the phase centre.
 sources = np.array([
     [50, 50, 1.0, 0.0, 0.0, 0.0,],
     [35, 75, 2.0, 0.0, 0.0, 0.0,],

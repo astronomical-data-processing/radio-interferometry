@@ -1,32 +1,22 @@
-FROM radioastro/python
+FROM python:3.12-slim
 
-MAINTAINER fengwang@gzhu.edu.cn
+LABEL org.opencontainers.image.authors="fengwang@gzhu.edu.cn"
 
-RUN apt-get update && apt-get install -yq --no-install-recommends \
-    libpng-dev \
-    libncurses5-dev \
-    pkg-config \
-    libfreetype6-dev \
-    libblas-dev \
-    liblapack-dev \
-    libatlas-base-dev \
-    gfortran \
-    && rm -rf /var/lib/apt/lists/*
+ENV PIP_NO_CACHE_DIR=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
-COPY requirements.txt /
+RUN useradd --create-home notebook
 
-RUN pip install -r /requirements.txt
+COPY requirements.txt /tmp/requirements.txt
+RUN python3 -m pip install --upgrade pip \
+    && python3 -m pip install -r /tmp/requirements.txt
 
-COPY . /notebooks
-
-RUN useradd notebook -m
-
-RUN chown -R notebook /notebooks
+WORKDIR /notebooks
+COPY --chown=notebook:notebook . /notebooks
 
 EXPOSE 8888
 
-WORKDIR /notebooks
-
 USER notebook
 
-CMD jupyter notebook --ip 0.0.0.0  --notebook-dir=/notebooks
+CMD ["python3", "-m", "jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--ServerApp.root_dir=/notebooks"]

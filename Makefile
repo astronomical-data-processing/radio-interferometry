@@ -1,5 +1,11 @@
-.PHONY: all pull_data setup_dependencies
+.PHONY: all check_python pull_data setup_dependencies test
+
+PYTHON ?= python3
+
 all: setup_dependencies pull_data
+
+check_python:
+	@$(PYTHON) -c "import sys; assert sys.version_info >= (3, 10), 'Python 3.10 or newer is required'"
 
 pull_data:
 	wget https://www.dropbox.com/s/n3jyiajytwuldpu/fundamentals_fits.tar.gz?dl=0
@@ -9,9 +15,9 @@ pull_data:
 	rm fundamentals_fits.tar.gz?dl=0
 	rm simulated_KAT-7_ms.tar.gz?dl=0
 
-setup_dependencies:
-	pip install --upgrade pip
-	pip install -r requirements.txt
-	git clone https://github.com/krosenfeld/slimscat.git
-	cd slimscat; python setup.py install 
-	rm -rf slimscat
+setup_dependencies: check_python
+	$(PYTHON) -m pip install --upgrade pip
+	$(PYTHON) -m pip install -r requirements.txt
+
+test: check_python
+	$(PYTHON) -m unittest discover -s tests

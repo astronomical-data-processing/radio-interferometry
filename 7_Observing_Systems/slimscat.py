@@ -11,7 +11,6 @@
 import numpy as np
 import struct
 from scipy.interpolate import RectBivariateSpline
-from scipy.ndimage.interpolation import rotate
 import pdb
 
 def generate_screen(nphi=2**13,dx=1.,wavelength=1.3e-6,\

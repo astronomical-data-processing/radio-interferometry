@@ -1,11 +1,12 @@
 import numpy as np
-import os
 import sys
+from pathlib import Path
 
-# Hack to import 5_Imaging.track_simulator.py
-base_dir, current_dir = os.path.split(os.getcwd())
-imaging_dir = os.path.join(base_dir, '5_Imaging')
-sys.path.insert(0, imaging_dir)
+# The chapter directories are not Python packages, so resolve the shared
+# simulator relative to this file instead of the caller's working directory.
+imaging_dir = Path(__file__).resolve().parents[1] / '5_Imaging'
+if str(imaging_dir) not in sys.path:
+    sys.path.insert(0, str(imaging_dir))
 
 from track_simulator import sim_uv
 
@@ -118,16 +119,16 @@ def lm_2_rad(ra, dec):
     # Right ascension (degrees) to radians
     # Declination (degrees) to radians
     # Right ascension deltas in radians
-    ra_rad = ra * np.pi / 180
-    dec_rad = dec * np.pi / 180    
-    ra_delta_rad = ra - ra[0]
+    ra_rad = np.deg2rad(ra)
+    dec_rad = np.deg2rad(dec)
+    ra_delta_rad = ra_rad - ra_rad[0]
 
     # Create the empty lm array. Compute l and m.
     nsrc = ra.shape[0]
     lm = np.empty(shape=(nsrc,2), dtype=np.float64)
     lm[:,0] = np.cos(dec_rad)*np.sin(ra_delta_rad)
     lm[:,1] = np.sin(dec_rad)*np.cos(dec_rad[0]) - \
-        np.cos(dec_rad)*np.sin(dec_rad[0])*np.sin(ra_delta_rad)
+        np.cos(dec_rad)*np.sin(dec_rad[0])*np.cos(ra_delta_rad)
 
     return lm
 
@@ -144,7 +145,7 @@ def phase(lm, uvw, frequency):
         lm : float array of shape (nsrc, 2)
             lm coordinates for each source in radians
         uvw : float array of shape (ntime, na, 3)
-            uvw coordinates for each baseline in metres
+            uvw coordinates for each antenna in metres
         frequency : float array of shape (nchan)
             frequencies for each channel in hz
 
@@ -166,7 +167,7 @@ def phase(lm, uvw, frequency):
     nchan = frequency.shape[0]
 
     # Reference l and m slices for convenenience and compute n from them
-    l, m = lm[:,0], lm[:,0]
+    l, m = lm[:,0], lm[:,1]
     n = np.sqrt(1.0 - l**2 - m**2) - 1.0
 
     assert not np.isnan(n).any(), \
@@ -187,12 +188,9 @@ def phase(lm, uvw, frequency):
 
 def dec_degrees(degree_str):
     """ Convert a coordinate in DD:MM:SS.SS to decimal degrees """
-    DECIMAL_DEGREE_DIVISORS = [1, 60, 3600, 216000]
-    
-    return sum(float(v) / DECIMAL_DEGREE_DIVISORS[i]
-        for i, v in enumerate(degree_str
-            .replace('.', ':')
-            .split(':')))
+    degree, minute, second = (float(v) for v in degree_str.split(':'))
+    sign = -1.0 if degree_str.strip().startswith('-') else 1.0
+    return sign * (abs(degree) + minute / 60.0 + second / 3600.0)
 
 """
 Array location
@@ -227,11 +225,11 @@ def KAT7_antenna_uvw(ref_ra=60, ref_dec=45):
     """
 
     # ref_ra = 0 to 360
-    # ref_dec = 0 to 90
+    # ref_dec = -90 to 90
 
     bl_uvw = sim_uv(ref_ra=ref_ra, ref_dec=ref_dec,
         observation_length_in_hrs=12, integration_length=3,
-        enu_coords=KAT7_ants, latitude=KAT7_location[1])
+        enu_coords=KAT7_ants, latitude=KAT7_location[0])
 
     # Check that we get the correct number of baselines
     # including auto-correlations
@@ -270,9 +268,10 @@ def rime(ant_uvw, sources, frequencies):
             over time.
         sources : ndarray
             An array of shape (nsrc, 6) containing rows
-            with data [l, m, I, Q, U, V] defining the
-            point source locations and stokes parameters
-            in degrees and Jy respectively
+            with data [ra, dec, I, Q, U, V] defining the
+            point source coordinates and Stokes parameters
+            in degrees and Jy respectively. The first source
+            defines the phase centre.
         frequencies: ndarray
             An array of shape (nchan,) containing the
             frequencies.
@@ -306,7 +305,7 @@ def rime(ant_uvw, sources, frequencies):
     K_per_ant = phase(lm, ant_uvw, frequencies)
 
     # Get an index that converts our per antenna values
-    # into per baseline values. K_pq = K_p - K_q
+    # into per baseline values. K_pq = K_p K_q^H.
     ap_idx = ap_index(nsrc=nsrc, ntime=ntime, na=na, nchan=nchan)
     K_per_bl = K_per_ant[ap_idx]
     K_p, K_q = K_per_bl[0], K_per_bl[1]
@@ -314,7 +313,7 @@ def rime(ant_uvw, sources, frequencies):
     # Compute source coherencies
     X_pqs = (K_p[:,:,:,:,np.newaxis,np.newaxis]*
         B[:,np.newaxis,np.newaxis,np.newaxis,:]*
-        K_q[:,:,:,:,np.newaxis,np.newaxis])
+        np.conj(K_q[:,:,:,:,np.newaxis,np.newaxis]))
     assert X_pqs.shape == (nsrc, ntime, nbl, nchan, 2, 2)
 
     # Sum over source dimension to produce visibilities
