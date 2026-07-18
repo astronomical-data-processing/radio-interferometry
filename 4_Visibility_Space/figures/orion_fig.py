@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -71,4 +73,3 @@ def draw_orion(output=Path(__file__).with_suffix(".png")):
 
 if __name__ == "__main__":
     draw_orion()
-    plt.show()

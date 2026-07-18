@@ -1,4 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+command -v wsclean >/dev/null || {
+    echo "wsclean is required" >&2
+    exit 127
+}
 
 #original data: fundamentals_of_interferometry/data/simulated_kat_7_vis/simulated_KAT-7_ms.tar.gz
 
@@ -39,4 +46,3 @@ wsclean -name KAT-7_6h60s_dec30_10MHz_10chans_uniform      -size 512 512 -scale 
 wsclean -name KAT-7_6h60s_dec0_10MHz_10chans_uniform       -size 512 512 -scale 0.006 -nosmallinversion -weight uniform -makepsf KAT-7_6h60s_dec0_10MHz_10chans.ms
 wsclean -name KAT-7_6h60s_dec-60_10MHz_10chans_uniform     -size 512 512 -scale 0.006 -nosmallinversion -weight uniform -makepsf KAT-7_6h60s_dec-60_10MHz_10chans.ms
 wsclean -name KAT-7_6h60s_dec-90_10MHz_10chans_uniform     -size 512 512 -scale 0.006 -nosmallinversion -weight uniform -makepsf KAT-7_6h60s_dec-90_10MHz_10chans.ms
-

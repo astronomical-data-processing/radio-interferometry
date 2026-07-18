@@ -1,4 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+command -v wsclean >/dev/null || {
+    echo "wsclean is required" >&2
+    exit 127
+}
 
 # Requires the matching KAT-7 Measurement Set in the current directory.
 

@@ -1,6 +1,7 @@
 plotUVcoverage.py:
-    requires pyrap, can also use python-casacore with a slight modification
+    requires the optional python-casacore package
 
-wsclean:
-    images generated with version WSClean version 1.9 (2015-08-21)
-
+WSClean scripts:
+    preserve the command line used with WSClean 1.9 (2015-08-21)
+    and require the matching KAT-7 Measurement Sets. Review option names
+    before using them with a newer WSClean release.

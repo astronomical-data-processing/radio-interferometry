@@ -1,4 +1,4 @@
-.PHONY: all check_python setup_dependencies test
+.PHONY: all check_python setup_dependencies test test-notebooks
 
 PYTHON ?= python3
 
@@ -13,3 +13,6 @@ setup_dependencies: check_python
 
 test: check_python
 	$(PYTHON) -m unittest discover -s tests
+
+test-notebooks: check_python
+	$(PYTHON) tools/execute_notebooks.py
