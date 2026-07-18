@@ -24,7 +24,7 @@
 - `6_Deconvolution`：去卷积、CLEAN、残差、图像质量、源搜索、正则化与目录选择函数；另有[100 分综合问题集](6_Deconvolution/6_problem_set.ipynb)。
 - `7_Observing_Systems`：RIME、主波束、极化、传播效应、RFI、系统温度、SEFD、观测日志与 QA；另有[定量问题集](7_Observing_Systems/7_problem_set.ipynb)。
 - `8_Calibration`：1GC、2GC、3GC、校准退化、模型不完备与解可信度；[校准习题](8_Calibration/8_problem_set.ipynb)包含可执行增益求解实验。
-- `9_Practical`：现代实践工作流、真实轻量样本包与项目练习材料。
+- `9_Practical`：现代实践工作流、真实轻量样本包、[WSRT/PyBDSF 产品复盘](9_Practical/9_37_pybdsf_real_product_replay.ipynb)、[BIMA Measurement Set 校准复盘](9_Practical/9_38_bima_measurement_set_calibration_replay.ipynb)与项目练习材料；另有[100 分综合实践问题集](9_Practical/9_problem_set.ipynb)。
 
 ## 第 9 章实践部分
 
@@ -85,7 +85,7 @@
 - 硕士阶段读者应继续完成第 8 章校准习题，并在第 9 章中选择连续谱、谱线、偏振或宽场专题形成项目报告。
 - 博士阶段或研究训练不能只阅读流程说明，还应使用真实 Measurement Set、校准表、weblog 或公开归档产品复现至少一条完整处理链。
 
-当前理论主线已经达到本科高年级教材所需的覆盖和数学深度；第 3、7 章已有综合定量问题集，第 8 章已有可执行校准实验。研究生和研究训练层次的主要缺口已转为真实 Measurement Set 上的纵向校准、成像与 QA，而不是继续增加专题标题。详细判断见 [Roadmap.md](Roadmap.md)。
+当前理论主线已经达到本科高年级教材所需的覆盖和数学深度；第 3、7 章已有综合定量问题集，第 8 章已有可执行校准实验，第 9.38 节已将同一求解器接入真实 BIMA Measurement Set 列。研究训练层次的主要缺口现在是带独立归档身份、通量模型、完整校准表、重成像和最终 QA 的纵向复现，而不是继续增加专题标题。详细判断见 [Roadmap.md](Roadmap.md)。
 
 ## 运行方式
 
@@ -108,15 +108,31 @@ python3 -m jupyter lab
 - 部分历史页面、遗留示例或外部数据案例，仍可能需要额外依赖或数据文件。
 - 当前的 [requirements.txt](requirements.txt) 已经整理为“当前基础依赖列表”，适合作为仓库的默认安装入口；但它仍不是严格锁定版本的可复现实验环境文件。
 - 目前已确认 `ephem`、`healpy` 和 `aplpy` 都不再是当前仓库的活动依赖。
-- `itrf2enu.py` 和历史 Measurement Set 绘图脚本还需要可选的 `python-casacore`；WSClean、CASA、Pyxis/Tigger 等外部射电软件不属于基础 Python 依赖。
+- `itrf2enu.py` 已经是纯 NumPy 实现；历史 Measurement Set 绘图脚本和 9.38 样本的重新提取需要可选的 `python-casacore`。9.38 的默认复盘使用已校验的 NumPy 提取包，不增加基础依赖。WSClean、CASA、Pyxis/Tigger 等外部射电软件不属于基础 Python 依赖。
 
 ## 数据文件说明
 
-默认教材路径不再依赖外部大文件：当前 61 本含实际代码的 Notebook 均可在 Python 3.10 和 3.13 基础环境中执行。旧 Högbom 和 Clark CLEAN 页面会优先读取用户提供的历史 FITS 图像；文件不存在时，自动使用固定随机种子的合成脏图和 PSF。
+默认教材路径不再依赖外部大文件：当前 64 本含实际代码的 Notebook 均可在 Python 3.10 和 3.13 基础环境中执行。旧 Högbom 和 Clark CLEAN 页面会优先读取用户提供的历史 FITS 图像；文件不存在时，自动使用固定随机种子的合成脏图和 PSF。
 
 原项目的两个 Dropbox 归档地址已经失效，因此不再由 `Makefile` 自动下载。`data/scripts/` 下的 WSClean、Tigger 和 Measurement Set 脚本仍作为历史工具入口保留，运行它们需要用户自行准备对应数据并安装外部射电软件；这些工具不属于默认 Notebook 回归范围。
 
 新增外部数据案例时，应记录公开来源、校验和、许可证和目标目录，并使用相对路径或可配置路径变量，不要写死个人机器路径。
+
+## 验证
+
+快速运行算法、链接、Notebook 结构和资产完整性测试：
+
+```bash
+make test
+```
+
+执行全部含代码的 Notebook：
+
+```bash
+make test-notebooks
+```
+
+Notebook 回归会把仓库复制到临时目录，并为每本 Notebook 启动独立 Python 内核，因此生成图和临时输出不会修改当前工作区。教材代码的运行期告警会按错误处理；GitHub Actions 会在 Python 3.10 和 3.13 下同时运行这两组检查。
 
 ## 维护与扩展
 
@@ -147,4 +163,4 @@ python3 -m jupyter lab
 
 ## 许可证
 
-本仓库的原创代码、文字和由项目代码生成的图示采用 [GNU General Public License v3.0](LICENSE)。外部照片、论文图表和其他第三方素材保留各自的版权与许可条件，不因收录于本仓库而自动改用 GPLv3；当前溯源状态和新增素材规则见 [ASSET_PROVENANCE.md](ASSET_PROVENANCE.md)。
+本仓库维护的教材、代码和项目生成图示统一采用 [GNU General Public License version 2](LICENSE)（GPL-2.0-only）。项目继承自原始英文教材；翻译、大幅改写和扩充不会自动消除衍生关系，原作者的版权与适用的 GPLv2 条款继续保留。外部照片、论文图表、科学数据和其他第三方素材仍遵守各自条件，不因收录而自动改用 GPLv2。完整边界见 [LICENSING.md](LICENSING.md)，素材溯源见 [ASSET_PROVENANCE.md](ASSET_PROVENANCE.md)。

@@ -1,6 +1,8 @@
+import hashlib
 import json
 import re
 import unittest
+import warnings
 from collections import Counter, defaultdict, deque
 from html.parser import HTMLParser
 from pathlib import Path
@@ -12,6 +14,11 @@ NOTEBOOKS = sorted(ROOT.rglob("*.ipynb"))
 LINK_PATTERN = re.compile(r"!?\[[^\]]*\]\(([^)]+)\)")
 CELL_ID_PATTERN = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 ANCHOR_PATTERN = re.compile(r"<a\s+[^>]*(?:id|name)=['\"]([^'\"]+)['\"]", re.I)
+ASSET_EXTENSIONS = {".gif", ".jpeg", ".jpg", ".pdf", ".png", ".svg", ".tif", ".tiff"}
+TEXT_EXTENSIONS = {
+    ".bib", ".cfg", ".css", ".html", ".ini", ".ipynb", ".md", ".py",
+    ".tex", ".toml", ".txt", ".yaml", ".yml",
+}
 COMPATIBILITY_NOTEBOOKS = {
     ROOT / "8_Calibration/8_x_further_reading_and_references.ipynb",
     ROOT / "9_Practical/9_3_Observing_smearing.ipynb",
@@ -50,6 +57,23 @@ class HTMLReferenceParser(HTMLParser):
 
 
 class NotebookIntegrityTests(unittest.TestCase):
+    def test_root_license_is_upstream_gplv2(self):
+        path = ROOT / "LICENSE"
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        self.assertEqual(
+            digest,
+            "db296f2f7f35bca3a174efb0eb392b3b17bd94b341851429a3dff411b1c2fc73",
+        )
+
+    def test_documentation_urls_use_https(self):
+        paths = [*ROOT.rglob("*.bib"), *ROOT.rglob("*.md"), *NOTEBOOKS]
+        insecure = [
+            path.relative_to(ROOT)
+            for path in paths
+            if "http://" in path.read_text(encoding="utf-8", errors="ignore")
+        ]
+        self.assertEqual(insecure, [])
+
     def test_python3_kernel_and_cell_ids(self):
         self.assertGreater(len(NOTEBOOKS), 100)
         for path in NOTEBOOKS:
@@ -61,6 +85,21 @@ class NotebookIntegrityTests(unittest.TestCase):
                 self.assertEqual(len(cell_ids), len(set(cell_ids)))
                 self.assertTrue(all(CELL_ID_PATTERN.fullmatch(value) for value in cell_ids))
 
+    def test_code_cells_compile_without_warnings(self):
+        from IPython.core.interactiveshell import InteractiveShell
+
+        shell = InteractiveShell.instance()
+        for path in NOTEBOOKS:
+            for index, cell in enumerate(load_notebook(path)["cells"]):
+                source = "".join(cell.get("source", []))
+                if cell.get("cell_type") != "code" or not source.strip():
+                    continue
+                transformed = shell.transform_cell(source)
+                with self.subTest(path=path.relative_to(ROOT), cell=index):
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("error")
+                        compile(transformed, f"{path}:cell-{index}", "exec")
+
     def test_no_stored_error_outputs(self):
         for path in NOTEBOOKS:
             for cell in load_notebook(path)["cells"]:
@@ -70,6 +109,21 @@ class NotebookIntegrityTests(unittest.TestCase):
                 ]
                 with self.subTest(path=path.relative_to(ROOT), cell=cell["id"]):
                     self.assertEqual(errors, [])
+
+    def test_no_stored_rich_media_outputs(self):
+        rich_media = {
+            "application/vnd.jupyter.widget-view+json",
+            "image/jpeg",
+            "image/png",
+            "image/svg+xml",
+        }
+        for path in NOTEBOOKS:
+            for cell in load_notebook(path)["cells"]:
+                stored = set()
+                for output in cell.get("outputs", []):
+                    stored.update(output.get("data", {}).keys() & rich_media)
+                with self.subTest(path=path.relative_to(ROOT), cell=cell["id"]):
+                    self.assertEqual(stored, set())
 
     def test_sources_have_no_control_characters(self):
         for path in NOTEBOOKS:
@@ -127,6 +181,29 @@ class NotebookIntegrityTests(unittest.TestCase):
                     continue
                 with self.subTest(path=source.relative_to(ROOT), target=target):
                     self.assertIn(fragment, anchors[local])
+
+    def test_image_assets_are_referenced_or_editable_variants(self):
+        texts = [
+            path.read_text(encoding="utf-8", errors="ignore")
+            for path in ROOT.rglob("*")
+            if path.is_file() and path.suffix.lower() in TEXT_EXTENSIONS
+        ]
+        corpus = "\n".join(texts)
+        assets = [
+            path for path in ROOT.rglob("*")
+            if path.is_file() and path.suffix.lower() in ASSET_EXTENSIONS
+        ]
+        referenced_variants = {
+            (path.parent, path.stem) for path in assets if path.name in corpus
+        }
+        unused = [
+            path.relative_to(ROOT)
+            for path in assets
+            if path.name not in corpus
+            and (path.parent, path.stem) not in referenced_variants
+            and "source" not in path.parts
+        ]
+        self.assertEqual(sorted(unused), [])
 
     def test_teaching_notebooks_are_reachable_from_contents(self):
         notebook_set = set(NOTEBOOKS)
