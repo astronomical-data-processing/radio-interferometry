@@ -1,0 +1,7 @@
+*.fits binary
+*.npy binary
+*.npz binary
+*.tgz binary
+
+9_Practical/sample_packages/bima_ngc4826_ms_replay/LICENSE-casacore -whitespace
+9_Practical/sample_packages/pybdsf_abell2255_replay/LICENSE-PyBDSF -whitespace

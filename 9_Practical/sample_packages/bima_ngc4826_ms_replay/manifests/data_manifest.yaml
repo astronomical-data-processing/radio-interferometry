@@ -1,0 +1,48 @@
+schema_version: 1
+sample_id: bima-ngc4826-casacore-ms-v1
+retrieved_utc: "2026-07-18"
+source:
+  repository: git@github.com:casacore/casacore.git
+  web: https://github.com/casacore/casacore
+  commit: ef9a25f41cd2c7edfe7a2d0eee549becb55a6403
+  first_fixture_commit: 54c10722cb1a35342cbe6b132063fbf6ff9a002d
+  license: LGPL-2.0 repository license; no separate Measurement Set statement was found
+  license_file: LICENSE-casacore
+measurement_set:
+  format: Measurement Set v2
+  table_description: Measurement Set (MIRIAD/BIMA)
+  rows: 14985
+  antennas: 10
+  fields: 9
+  data_descriptions: 6
+  telescope: BIMA
+  project: t108c115.n48
+  observation_date: "1998-04-16"
+  target: NGC4826 seven-field mosaic
+  calibrator: 3C273
+  note: Metadata was read with casacore TaQL; no original archive identifier was found.
+files:
+  - path: data/mssel_test_small_multifield_spw.ms.tgz
+    role: unmodified compressed Measurement Set
+    source_path: ms/MSSel/test/mssel_test_small_multifield_spw.ms.tgz
+    sha256: b487f5353948bcc76ca27ac3bdfee2a81a0667233eeb1ade911b9805488a0214
+  - path: derived/calibrator_3c273_ddid0.npz
+    role: DATA, FLAG, UVW and row metadata for FIELD_ID 0 and DATA_DESC_ID 0
+    generated_by: extract_visibility.py
+    sha256: 5ae2b2288de09458e095e64aa007a8b59fc600e9b209a139746e54507971329b
+  - path: derived/target_ngc4826_field2_ddid2.npz
+    role: DATA, FLAG, UVW and row metadata for FIELD_ID 2 and DATA_DESC_ID 2
+    generated_by: extract_visibility.py
+    sha256: 349d636c0cc7b4c6d205ae931677110ada871006cdebf3d63e3dc3f4e7ba963b
+  - path: derived/target_ngc4826_mosaic_coverage.npz
+    role: UVW, field, data-description and row flag coverage for all target fields
+    generated_by: extract_visibility.py
+    sha256: b9b0e94d4c3ed3d6beab940e7b499870c339f22a1791c824045b10e552d7994b
+  - path: derived/target_ddid2_channel_frequency_hz.npy
+    role: channel frequencies for DATA_DESC_ID 2
+    generated_by: extract_visibility.py
+    sha256: 7c49a2d54c0bd8585697cd6b35f20828726280b02a456dc576c995c30c5256be
+  - path: LICENSE-casacore
+    role: verbatim upstream repository license
+    source_path: COPYING
+    sha256: 4a4b8d92f00d95f04e3774f289d3d6b64a5f4fd2104fec97880ef3c6d5c59bf9

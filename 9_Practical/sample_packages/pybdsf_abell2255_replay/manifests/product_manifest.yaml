@@ -1,0 +1,44 @@
+schema_version: 1
+sample_id: pybdsf-abell2255-replay-v1
+retrieved_utc: "2026-07-18"
+source:
+  repository: git@github.com:lofar-astron/PyBDSF.git
+  web: https://github.com/lofar-astron/PyBDSF
+  commit: c70103be3ae9ae9908286f144e6ce956acc0ce5c
+  first_fixture_commit: 7e407c27019b71dfeca4d5690ee700ae637deea5
+  license: GPL-3.0-only at repository level; no separate FITS license statement was found
+  license_file: LICENSE-PyBDSF
+observation_header:
+  object: ABELL2255
+  instrument: WSRT
+  date_obs: 2006.37
+  note: Values are copied from the FITS header; no original archive identifier was found.
+files:
+  - path: data/abell2255_wsrt_stokes_cube.fits
+    role: cropped four-Stokes, ten-plane input fixture
+    source_path: test/tbdsf_process_image.in_fits
+    sha256: cc5e2fdaa5eb8a1510e1c8a74cb9bc341bc8a085d17f35ccdf94a18901d8cf02
+  - path: products/mean_stokes_i.fits
+    role: frequency-collapsed Stokes-I detection image
+    source_path: test/reference_outputs/tbdsf_process_image.in_fits.pybdsf.ch0_I.fits
+    sha256: 76e25f3171bbdeff3c8f7690a35c210352c48360498f6e6e683c7c9221350eb7
+  - path: products/local_rms.fits
+    role: PyBDSF RMS image
+    source_path: test/reference_outputs/background/tbdsf_process_image.in_fits.pybdsf.rmsd_I.fits
+    sha256: 341f76584a1fad58128585de60457031d40fc4313bdfa83121cac5ccd165ca3b
+  - path: products/gaussian_model.fits
+    role: fitted Gaussian model image
+    source_path: test/reference_outputs/model/tbdsf_process_image.in_fits.pybdsf.model.fits
+    sha256: ce217b92af438b4da99c091bf0a7d8e8a04557540d3b190b92190752afd0c727
+  - path: products/gaussian_residual.fits
+    role: input detection image minus Gaussian model
+    source_path: test/reference_outputs/residual/tbdsf_process_image.in_fits.pybdsf.resid_gaus.fits
+    sha256: d07ea4f6da6b79a18298f7523bbe4976c85bd3be515ea8f92e4e8937841277aa
+  - path: products/source_catalog.fits
+    role: PyBDSF source-level catalogue
+    source_path: test/reference_outputs/catalogues/tbdsf_process_image.in_fits.pybdsf.srl.FITS
+    sha256: eab2e1b5652087bdb5b4f6f3149078b48843e3768695ed13952044178bef1e27
+  - path: LICENSE-PyBDSF
+    role: verbatim upstream GPLv3 license
+    source_path: LICENSE
+    sha256: 589ed823e9a84c56feb95ac58e7cf384626b9cbf4fda2a907bc36e103de1bad2

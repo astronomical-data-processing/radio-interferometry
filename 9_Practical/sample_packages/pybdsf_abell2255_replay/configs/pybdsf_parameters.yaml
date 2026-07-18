@@ -1,0 +1,23 @@
+source: PyBDSF reference test output at commit c70103be3ae9ae9908286f144e6ce956acc0ce5c
+input:
+  collapse_mode: average
+  collapse_stokes: I
+  planes: 10
+beam_deg: [0.015, 0.015, 0.0]
+detection:
+  thresh_pix: 5.0
+  thresh_isl: 3.0
+  rms_box: [41, 13]
+  rms_box_bright: [12, 4]
+model:
+  atrous_do: true
+  shapelet_do: true
+  polarisation_do: true
+outputs_included:
+  - mean_stokes_i
+  - local_rms
+  - gaussian_model
+  - gaussian_residual
+  - source_catalog
+sanitization:
+  omitted: The upstream parameters_used file contains machine-specific absolute paths and unrelated defaults.
