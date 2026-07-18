@@ -42,6 +42,10 @@ files:
     role: channel frequencies for DATA_DESC_ID 2
     generated_by: extract_visibility.py
     sha256: 7c49a2d54c0bd8585697cd6b35f20828726280b02a456dc576c995c30c5256be
+  - path: derived/relative_gain_table.npz
+    role: per-integration relative scalar gains with baseline-holdout QA
+    generated_by: analyze_ms.py --write-gain-table
+    sha256: ffbb8b0fe9ce264f777f4a8ed3574f769b4b1f519323791ceb2be6d9da31ab9f
   - path: LICENSE-casacore
     role: verbatim upstream repository license
     source_path: COPYING

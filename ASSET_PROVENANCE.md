@@ -38,7 +38,7 @@
 
 `9_Practical/sample_packages/bima_ngc4826_ms_replay/` 包含 casacore 官方仓库的 BIMA NGC 4826 测试 Measurement Set，当前来源 commit 为 `ef9a25f41cd2c7edfe7a2d0eee549becb55a6403`，历史首次在 commit `54c10722cb1a35342cbe6b132063fbf6ff9a002d` 将该文件加入 field-selection 测试。上游仓库使用 GNU Library General Public License v2，但未发现该 MS 的单独许可声明或原始归档编号。本仓库保留上游 `COPYING` 全文和原样 `.ms.tgz`，manifest 记录源路径、表摘要和 SHA-256。
 
-为使 Python 3.10+ 基础环境无需 CASA/casacore 也能完成教学复盘，`extract_visibility.py` 从原 MS 导出 3C273 校准场和一个 NGC 4826 field/DDID 的 `DATA`、`FLAG`、`UVW`、`WEIGHT`、天线和时间列，并另存全部七个目标 field、四个 64 通道 data description 的行级 `UVW`、元数据和 flag 比例。这些派生数组同样被校验和固定。校准场结束到目标场开始相隔约 989 s，因此本案例不声称可把相对增益直接同步转移到目标。该包支持表结构、flag、$uv$ 覆盖和相对标量增益实验，但因缺少独立通量模型、完整日志和原归档身份，不能建立绝对通量标度或声称完成可发布的重成像。
+为使 Python 3.10+ 基础环境无需 CASA/casacore 也能完成教学复盘，`extract_visibility.py` 从原 MS 导出 3C273 校准场和一个 NGC 4826 field/DDID 的 `DATA`、`FLAG`、`UVW`、`WEIGHT`、天线和时间列，并另存全部七个目标 field、四个 64 通道 data description 的行级 `UVW`、元数据和 flag 比例。`analyze_ms.py` 还生成逐积分相对增益表，记录参考天线、输入支持权重、flag、14 条训练基线、7 条留出基线及逐时间残差；输入支持权重不是增益形式协方差。最终增益使用全部 21 条基线重算，留出解只用于验证。所有派生数组均被校验和固定。校准场结束到目标场开始相隔约 989 s，因此本案例不声称可把相对增益直接同步转移到目标。该包支持表结构、flag、$uv$ 覆盖、相对标量增益表和基线留出 QA，但因缺少独立通量模型、完整日志和原归档身份，不能建立绝对通量标度或声称完成可发布的重成像。
 
 ## 新增资产规则
 

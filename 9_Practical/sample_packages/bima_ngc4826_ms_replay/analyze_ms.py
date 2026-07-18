@@ -1,5 +1,6 @@
 """Offline QA and scalar calibration for the bundled BIMA MS extracts."""
 
+import argparse
 import hashlib
 import importlib.util
 import tarfile
@@ -132,15 +133,149 @@ def calibrator_matrices():
     return data, weights
 
 
-def calibration_summary():
+def _load_solver():
     solver_path = ROOT.parents[2] / "8_Calibration" / "calibration_solver.py"
     spec = importlib.util.spec_from_file_location("calibration_solver", solver_path)
     solver = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(solver)
+    return solver
+
+
+def _point_model(shape):
+    model = np.ones(shape, complex)
+    diagonal = np.arange(shape[-1])
+    model[..., diagonal, diagonal] = 0.0
+    return model
+
+
+def _baseline_split(n_antennas):
+    antenna1, antenna2 = np.triu_indices(n_antennas, 1)
+    held_out = (antenna1 + antenna2) % 3 == 0
+    holdout_mask = np.zeros((n_antennas, n_antennas), bool)
+    holdout_mask[antenna1[held_out], antenna2[held_out]] = True
+    holdout_mask |= holdout_mask.T
+    training_mask = ~holdout_mask
+    np.fill_diagonal(training_mask, False)
+    pairs = np.column_stack((antenna1, antenna2))
+    return training_mask, holdout_mask, pairs[~held_out], pairs[held_out]
+
+
+def _solve_interval_gains(data, weights, model, baseline_mask, interval_samples):
+    if not isinstance(interval_samples, (int, np.integer)) or interval_samples < 1:
+        raise ValueError("interval_samples must be a positive integer")
+
+    solver = _load_solver()
+    gains = np.empty(data.shape[:-1], complex)
+    for start in range(0, data.shape[0], interval_samples):
+        stop = min(start + interval_samples, data.shape[0])
+        block_weights = weights[start:stop] * baseline_mask
+        combined_weights = block_weights.sum(axis=0)
+        combined_data = np.divide(
+            (data[start:stop] * block_weights).sum(axis=0),
+            combined_weights,
+            out=np.zeros(data.shape[-2:], complex),
+            where=combined_weights > 0,
+        )
+        gains[start:stop] = solver.solve_gains(
+            combined_data, model[0], weights=combined_weights
+        )
+    return gains
+
+
+def _rms_by_time(data, model, weights):
+    antenna1, antenna2 = np.triu_indices(data.shape[-1], 1)
+    pair_weights = weights[:, antenna1, antenna2]
+    residual_squared = abs(
+        data[:, antenna1, antenna2] - model[:, antenna1, antenna2]
+    ) ** 2
+    total_weight = pair_weights.sum(axis=1)
+    if np.any(total_weight <= 0):
+        raise ValueError("every solution must contain a positive-weight baseline")
+    return np.sqrt((pair_weights * residual_squared).sum(axis=1) / total_weight)
+
+
+def calibration_interval_summary(interval_samples=(1, 5, 65)):
+    data, weights = calibrator_matrices()
+    model = _point_model(data.shape)
+    training_mask, holdout_mask, _, _ = _baseline_split(data.shape[-1])
+    solver = _load_solver()
+    safe_data = np.where(weights > 0, data, 1.0)
+    summaries = []
+    for samples in interval_samples:
+        gains = _solve_interval_gains(
+            data, weights, model, training_mask, samples
+        )
+        corrected = solver.correct_visibilities(safe_data, gains)
+        summaries.append(
+            {
+                "interval_samples": int(samples),
+                "solutions": int(np.ceil(data.shape[0] / samples)),
+                "training_rms": solver.rms_residual(
+                    corrected, model, weights * training_mask
+                ),
+                "holdout_rms": solver.rms_residual(
+                    corrected, model, weights * holdout_mask
+                ),
+            }
+        )
+    return summaries
+
+
+def calibration_table():
+    values = _load_extract("calibrator_3c273_ddid0.npz")
+    times = np.unique(values["time_s"])
+    integration_s = np.array(
+        [np.median(values["interval_s"][values["time_s"] == time]) for time in times]
+    )
+    data, weights = calibrator_matrices()
+    model = _point_model(data.shape)
+    training_mask, holdout_mask, training_pairs, holdout_pairs = _baseline_split(
+        data.shape[-1]
+    )
+    solver = _load_solver()
+    full_mask = ~np.eye(data.shape[-1], dtype=bool)
+    gains = _solve_interval_gains(data, weights, model, full_mask, 1)
+    validation_gains = _solve_interval_gains(
+        data, weights, model, training_mask, 1
+    )
+    safe_data = np.where(weights > 0, data, 1.0)
+    corrected = solver.correct_visibilities(safe_data, gains)
+    validation_corrected = solver.correct_visibilities(safe_data, validation_gains)
+
+    return {
+        "schema_version": np.array(1),
+        "time_s": times,
+        "interval_s": integration_s,
+        "antenna_id": ACTIVE_CALIBRATOR_ANTENNAS.copy(),
+        "reference_antenna_id": np.array(ACTIVE_CALIBRATOR_ANTENNAS[0]),
+        "model_flux_native": np.array(1.0),
+        "gain": gains,
+        "input_weight": weights.sum(axis=-1),
+        "gain_flag": weights.sum(axis=-1) <= 0,
+        "training_baseline_pairs": ACTIVE_CALIBRATOR_ANTENNAS[training_pairs],
+        "holdout_baseline_pairs": ACTIVE_CALIBRATOR_ANTENNAS[holdout_pairs],
+        "full_fit_rms": _rms_by_time(corrected, model, weights),
+        "training_rms": _rms_by_time(
+            validation_corrected, model, weights * training_mask
+        ),
+        "holdout_rms": _rms_by_time(
+            validation_corrected, model, weights * holdout_mask
+        ),
+    }
+
+
+def write_calibration_table(path):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    np.savez_compressed(path, **calibration_table())
+    return path
+
+
+def calibration_summary():
+    solver = _load_solver()
 
     data, weights = calibrator_matrices()
-    model = np.ones_like(data)
-    model[..., np.arange(model.shape[-1]), np.arange(model.shape[-1])] = 0.0
+    model = _point_model(data.shape)
     gains = solver.solve_gains(data, model, weights=weights)
     corrected = solver.correct_visibilities(np.where(weights > 0, data, 1.0), gains)
     before = solver.rms_residual(data, model, weights)
@@ -158,14 +293,30 @@ def calibration_summary():
     }
 
 
-if __name__ == "__main__":
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--write-gain-table", type=Path)
+    args = parser.parse_args()
+    if args.write_gain_table:
+        print(f"gain table: {write_calibration_table(args.write_gain_table)}")
+        return
+
     summaries = (
         ("visibility", visibility_summary()),
         ("mosaic coverage", coverage_summary()),
         ("relative calibration", calibration_summary()),
+        ("solution intervals", calibration_interval_summary()),
     )
     for title, summary in summaries:
         print(f"[{title}]")
-        for key, value in summary.items():
-            if not isinstance(value, np.ndarray):
-                print(f"{key}: {value}")
+        if isinstance(summary, list):
+            for record in summary:
+                print(record)
+        else:
+            for key, value in summary.items():
+                if not isinstance(value, np.ndarray):
+                    print(f"{key}: {value}")
+
+
+if __name__ == "__main__":
+    main()

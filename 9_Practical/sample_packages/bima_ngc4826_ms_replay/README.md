@@ -17,7 +17,13 @@ recorded in `manifests/data_manifest.yaml`.
 four 64-channel data descriptions. The visibility extracts preserve `DATA`,
 `FLAG`, `UVW`, `WEIGHT`, antenna, time, field and data-description columns;
 the coverage extract preserves `UVW`, row metadata and per-row flag fractions.
-These extracts allow the core notebook to run without CASA or casacore.
+`relative_gain_table.npz` adds checksum-pinned per-integration scalar gains,
+input-support weights, flags, the reference antenna and training/holdout
+residuals. The input weight is the sum over incident baseline weights, not a
+formal gain inverse variance. Final gains use all 21 baselines; a separate
+connected 14-baseline solve is
+validated on seven baselines that were excluded from fitting. These products
+allow the core notebook to run without CASA or casacore.
 `extract_visibility.py` documents and reproduces the selection when
 `python-casacore` is available:
 
@@ -31,12 +37,19 @@ Run checksum, structure, visibility and scalar-calibration validation with:
 python analyze_ms.py
 ```
 
+Regenerate the relative gain table with:
+
+```bash
+python analyze_ms.py --write-gain-table derived/relative_gain_table.npz
+```
+
 This is a genuine Measurement Set table with real-valued visibility products,
 but it is a casacore test fixture rather than a complete archive delivery. It
 supports table inspection, flag/coverage QA and a normalized point-calibrator
-gain experiment. It does not contain a complete observing log, independent
-flux model, modern calibration tables or a documented path back to the
-original archive. The scalar solve therefore demonstrates relative gain
+gain experiment with a machine-readable relative gain table. It does not
+contain a complete observing log, independent flux model, observatory-native
+calibration tables or a documented path back to the original archive. The
+scalar solve therefore demonstrates relative gain
 calibration; it does not establish an absolute flux scale. The calibrator and
 target data are separated by about 989 seconds, so the notebook does not claim
 that the calibrator gains can be transferred synchronously to the target
