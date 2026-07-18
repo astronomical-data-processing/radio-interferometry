@@ -26,7 +26,12 @@ class SamplePackageTests(unittest.TestCase):
         self.assertGreater(summary["analysis_pixels"], 0)
         self.assertGreater(summary["pixels_per_beam"], 1.0)
         self.assertGreater(summary["independent_beams"], 1.0)
+        self.assertGreater(summary["background_independent_beams"], 1.0)
         self.assertEqual(summary["noise_model"], "independent_synthesized_beams")
+        self.assertGreater(summary["background_uncertainty_jy"], 0.0)
+        self.assertGreater(
+            summary["total_uncertainty_jy"], summary["random_uncertainty_jy"]
+        )
         self.assertGreater(summary["total_uncertainty_jy"], 0.0)
         self.assertGreater(summary["three_sigma_sensitivity_jy"], 0.0)
         self.assertTrue(0.0 < summary["signal_to_noise"] < 100.0)

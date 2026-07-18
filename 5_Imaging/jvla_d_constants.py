@@ -1,15 +1,16 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import numpy as np
+
+from array_coordinates import ecef_to_enu
 
 #*************************************************************************************
 #JVLA D-CONFIGURATION ANTENNA COORDINATES
 #*************************************************************************************
 
 NO_ANTENNA = 27
-NO_BASELINES = NO_ANTENNA * (NO_ANTENNA - 1) / 2 + NO_ANTENNA
-global CENTRE_CHANNEL
-CENTRE_CHANNEL = 299792458 / 1e9 #Wavelength of 1 GHz
+NO_BASELINES = NO_ANTENNA * (NO_ANTENNA + 1) // 2
+CENTRE_CHANNEL = 299792458 / 1e9  # Wavelength at 1 GHz
 #Antenna positions (from Measurement Set "ANTENNA" table)
 #Here we assumed these are in Earth Centred Earth Fixed coordinates, see:
 #https://en.wikipedia.org/wiki/ECEF
@@ -40,20 +41,8 @@ ANTENNA_POSITIONS = np.array([[-1601710.017000 , -5042006.925200 , 3554602.35560
                               [-1601180.861480 , -5041947.453400 , 3554921.628700],
                               [-1601265.153600 , -5041982.533050 , 3554834.858400],
                               [-1601114.365500 , -5042023.151800 , 3554844.944000],
-                              [-1601147.940400 , -5041733.837000 , 3555235.956000]]);
-ARRAY_LATITUDE = 34 + 4 / 60.0 + 43.497 / 3600.0 #Equator->North
-ARRAY_LONGITUDE = -(107 + 37 / 60.0 + 03.819 / 3600.0) #Greenwitch->East, prime -> local meridian
+                              [-1601147.940400 , -5041733.837000 , 3555235.956000]])
+ARRAY_LATITUDE = 34 + 4 / 60.0 + 43.497 / 3600.0  # Equator to north
+ARRAY_LONGITUDE = -(107 + 37 / 60.0 + 3.819 / 3600.0)  # Greenwich to east
 REF_ANTENNA = 0
-#Conversion from ECEF -> ENU:
-#http://www.navipedia.net/index.php/Transformations_between_ECEF_and_ENU_coordinates
-slambda = np.sin(np.deg2rad(ARRAY_LONGITUDE))
-clambda = np.cos(np.deg2rad(ARRAY_LONGITUDE))
-sphi = np.sin(ARRAY_LONGITUDE)
-cphi = np.cos(ARRAY_LATITUDE)
-ecef_to_enu = [[-slambda,clambda,0],
-               [-clambda*sphi,-slambda*sphi,cphi],
-               [clambda*cphi,slambda*cphi,sphi]]
-ENU = np.empty(ANTENNA_POSITIONS.shape)
-for a in range(0,NO_ANTENNA):
-    ENU[a,:] = np.dot(ecef_to_enu,ANTENNA_POSITIONS[a,:])
-ENU -= ENU[REF_ANTENNA]
+ENU = ecef_to_enu(ANTENNA_POSITIONS, ARRAY_LONGITUDE, ARRAY_LATITUDE, REF_ANTENNA)

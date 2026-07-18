@@ -1,67 +1,46 @@
 import numpy as np
 
-def fft_degrid(model_image, uvw, ref_lda, Nx, Ny, convolution_filter):
-    """
-    Convolutional gridder (continuum)
 
-    Keyword arguments:
-    model_image --- Model image
-    uvw --- interferometer's scaled uvw coordinates
-            (Prerequisite: these uv points are already scaled by the similarity
-            theorem, such that -N_x*Cell_l*0.5 <= theta_l <= N_x*Cell_l*0.5 and
-            -N_y*Cell_m*0.5 <= theta_m <= N_y*Cell_m*0.5)
-    ref_lda --- array of reference lambdas (size of vis channels)
-    Nx,Ny --- size of image in pixels
-    convolution_filter --- pre-instantiated AA_filter anti-aliasing
-                           filter object
-    """
-    assert model_image.ndim == 3
-    filter_index = \
-        np.arange(-convolution_filter.half_sup,convolution_filter.half_sup+1)
-    model_vis_regular = np.zeros(model_image.shape, dtype=np.complex64)
-    for p in range(model_image.shape[0]):
-        model_vis_regular[p, :, :] = \
-            np.fft.fftshift(np.fft.fft2(np.fft.ifftshift(model_image[p, :, :])))
-    vis = \
-        np.zeros([uvw.shape[0],
-                  ref_lda.shape[0],
-                  model_image.shape[0]],
-                 dtype=complex)
+def fft_degrid(model_image, uvw, ref_lda, nx, ny, convolution_filter):
+    """FFT a model image and interpolate it at irregular UV coordinates."""
+    model_image = np.asarray(model_image)
+    uvw = np.asarray(uvw)
+    ref_lda = np.asarray(ref_lda)
+    if model_image.ndim != 3 or model_image.shape[1:] != (ny, nx):
+        raise ValueError("model_image must have shape (pol, ny, nx)")
+    if uvw.ndim != 2 or uvw.shape[1] != 3:
+        raise ValueError("uvw must have shape (row, 3)")
+    if ref_lda.ndim != 1 or np.any(ref_lda <= 0):
+        raise ValueError("ref_lda must be a one-dimensional array of positive wavelengths")
+    if not np.all(np.isfinite(uvw)):
+        raise ValueError("uvw must contain only finite coordinates")
 
-    for r in range(uvw.shape[0]):
-        for c in range(vis.shape[1]):
-            scaled_uv = uvw[r,:] / ref_lda[c]
-            disc_u = int(np.round(scaled_uv[0]))
-            disc_v = int(np.round(scaled_uv[1]))
-            frac_u_offset = int((1 + convolution_filter.half_sup +
-                                 (-scaled_uv[0] + disc_u)) *
-                                convolution_filter.oversample)
-            frac_v_offset = int((1 + convolution_filter.half_sup +
-                                 (-scaled_uv[1] + disc_v)) *
-                                convolution_filter.oversample)
+    model_grid = np.fft.fftshift(
+        np.fft.fft2(np.fft.ifftshift(model_image, axes=(-2, -1))),
+        axes=(-2, -1),
+    )
+    vis = np.zeros((uvw.shape[0], ref_lda.size, model_image.shape[0]), complex)
+    offsets = convolution_filter.offsets
 
-            if (disc_v + Ny // 2 + convolution_filter.half_sup >= Ny or
-                disc_u + Nx // 2 + convolution_filter.half_sup >= Nx or
-                disc_v + Ny // 2 - convolution_filter.half_sup < 0 or
-                disc_u + Nx // 2 - convolution_filter.half_sup < 0):
-                continue
-            for conv_v in filter_index:
-                v_tap = \
-                    convolution_filter.filter_taps[conv_v *
-                                                   convolution_filter.oversample
-                                                   + frac_v_offset]
-                grid_pos_v = disc_v + conv_v + Ny // 2
-                for conv_u in filter_index:
-                    u_tap = \
-                        convolution_filter.filter_taps[conv_u *
-                                                       convolution_filter.oversample
-                                                       + frac_u_offset]
-                    conv_weight = v_tap * u_tap
-                    grid_pos_u = disc_u + conv_u + Nx // 2
-                    for p in range(vis.shape[2]):
-                        vis[r, c, p] += \
-                            model_vis_regular[p,
-                                              grid_pos_v,
-                                              grid_pos_u] * conv_weight
+    for row, coordinate in enumerate(uvw):
+        for channel, wavelength in enumerate(ref_lda):
+            u, v = coordinate[:2] / wavelength
+            grid_u, taps_u = convolution_filter.sample(u)
+            grid_v, taps_v = convolution_filter.sample(v)
+            positions_u = grid_u + offsets + nx // 2
+            positions_v = grid_v + offsets + ny // 2
+            if (
+                positions_u[0] < 0
+                or positions_u[-1] >= nx
+                or positions_v[0] < 0
+                or positions_v[-1] >= ny
+            ):
+                raise ValueError("a convolution footprint extends beyond the UV grid")
+
+            weights = np.outer(taps_v, taps_u)
+            vis[row, channel] = np.sum(
+                model_grid[:, positions_v[:, None], positions_u] * weights,
+                axis=(-2, -1),
+            )
 
     return vis

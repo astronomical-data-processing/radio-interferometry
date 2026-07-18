@@ -1,324 +1,276 @@
-import numpy as np
 import sys
 from pathlib import Path
 
-# The chapter directories are not Python packages, so resolve the shared
-# simulator relative to this file instead of the caller's working directory.
-imaging_dir = Path(__file__).resolve().parents[1] / '5_Imaging'
-if str(imaging_dir) not in sys.path:
-    sys.path.insert(0, str(imaging_dir))
+import numpy as np
+
+
+# Chapter directories are not Python packages, so resolve the shared simulator
+# relative to this file rather than the caller's working directory.
+IMAGING_DIR = Path(__file__).resolve().parents[1] / "5_Imaging"
+if str(IMAGING_DIR) not in sys.path:
+    sys.path.insert(0, str(IMAGING_DIR))
 
 from track_simulator import sim_uv
 
-ALL_SLICE = slice(None, None, 1)
-SRC_SLICE  = (np.newaxis, ALL_SLICE, np.newaxis, np.newaxis, np.newaxis)
+
+C = 299_792_458.0
+
+ALL_SLICE = slice(None)
+SRC_SLICE = (np.newaxis, ALL_SLICE, np.newaxis, np.newaxis, np.newaxis)
 TIME_SLICE = (np.newaxis, np.newaxis, ALL_SLICE, np.newaxis, np.newaxis)
 ANT_SLICE = (ALL_SLICE, np.newaxis, ALL_SLICE, ALL_SLICE, np.newaxis)
 CHAN_SLICE = (np.newaxis, np.newaxis, np.newaxis, np.newaxis, ALL_SLICE)
 
+
 def ap_index(nsrc=0, ntime=1, na=1, nchan=0):
+    """Return indices that map per-antenna arrays onto upper-triangle baselines.
+
+    For an input with shape ``(nsrc, ntime, na, nchan)``, the returned tuple
+    selects an array with shape ``(2, nsrc, ntime, nbl, nchan)``. Source and
+    channel axes are omitted when their corresponding sizes are zero.
     """
-    Returns an antenna pair index suitable for producing
-    a per baseline mapping of per antenna values.
-    Indexes arrays of shape (nsrc, ntime, na, nchan). Returns
-    an array of shape (2, nsrc, time, nbl, chan).
+    if ntime < 1:
+        raise ValueError("ntime must be at least 1")
+    if na < 1:
+        raise ValueError("na must be at least 1")
+    if nsrc < 0 or nchan < 0:
+        raise ValueError("nsrc and nchan cannot be negative")
 
-    The following must hold:
-        ntime > 0 and na > 0
+    needed = (True, nsrc > 0, True, True, nchan > 0)
+    nbl = na * (na + 1) // 2
+    pairs = np.asarray(np.triu_indices(na), dtype=np.intp)
+    antenna_pairs = np.broadcast_to(pairs[:, np.newaxis, :], (2, ntime, nbl))
+    indices = []
 
-    If nsrc == 0 or nchan == 0 these dimension should not
-    be present in the indexed shape and won't be present in
-    the returned shape.
+    if nsrc > 0:
+        source_slice = tuple(s for s, keep in zip(SRC_SLICE, needed) if keep)
+        indices.append(np.arange(nsrc)[source_slice])
 
-    >>> uvw_ant_coords = np.random.random(size=(10,7,3))
-    >>> api = ap_index(ntime=10, na=7)
-    >>> uvw_mapping = uvw_ant_coords[api]
-    >>> uvw_bl_coords = uvw_mapping[0] - uvw_mapping[1]
-    """
-    needed = (_, S, T, A, C) = True, nsrc > 0, ntime > 0, na > 0, nchan > 0
+    time_slice = tuple(s for s, keep in zip(TIME_SLICE, needed) if keep)
+    indices.append(np.arange(ntime)[time_slice])
 
-    assert T, 'Number of timesteps must be greater than 1'
-    assert A, 'Number of antenna must be greater than 1'
+    antenna_slice = tuple(s for s, keep in zip(ANT_SLICE, needed) if keep)
+    indices.append(antenna_pairs[antenna_slice])
 
-    nbl = na*(na+1)//2
+    if nchan > 0:
+        channel_slice = tuple(s for s, keep in zip(CHAN_SLICE, needed) if keep)
+        indices.append(np.arange(nchan)[channel_slice])
 
-    # This produces the default antenna pair mapping
-    # ANT1: 0000 111 22 3
-    # ANT2: 0123 123 23 3
-    default_ap = np.tile(np.int32(np.triu_indices(na, 0)), ntime) \
-            .reshape(2, ntime, nbl)
+    return tuple(indices)
 
-    # The index that we're going to return
-    idx = []
-
-    # These slices, when used to index the actual index values
-    # below (np.arange(...) and default_ap), produce broadcasts
-    # when idx is used to index an array
-    if S:
-        src_slice  = tuple([s for s, n in zip(SRC_SLICE, needed) if n])
-        idx.append(np.arange(nsrc)[src_slice])
-
-    time_slice = tuple([t for t, n in zip(TIME_SLICE, needed) if n])
-    idx.append(np.arange(ntime)[time_slice])
-
-    ant_slice  = tuple([a for a, n in zip(ANT_SLICE, needed) if n])
-    idx.append(default_ap[ant_slice])
-
-    if C:
-        chan_slice = tuple([c for c, n in zip(CHAN_SLICE, needed) if n])
-        idx.append(np.arange(nchan)[chan_slice])
-
-    return tuple(idx)
 
 def brightness(I, Q, U, V):
-    """ Create a brightness matrix from the supplied stokes parameters """
+    """Return linear-basis brightness matrices for arrays of Stokes values.
 
-    # Sanity checks
-    assert I.ndim == Q.ndim == U.ndim == V.ndim == 1, \
-        "Stokes parameters should only have one dimension."
-    assert I.shape == Q.shape == U.shape == V.shape, \
-        "I, Q, U and V do not have the same shape."
-
-    # Setup our array dimensions
-    nsrc = I.shape[0]
-
-    # Create a nsrc x 2 x 2 matrix to hold the complex polarisation values
-    B = np.empty(shape=(nsrc, 2, 2), dtype=np.complex128)
-
-    # Compute the polarisation values
-    B[:,0,0] = I + Q
-    B[:,0,1] = U + V*1j
-    B[:,1,0] = U - V*1j
-    B[:,1,1] = I - Q
-
-    return B
-
-def lm_2_rad(ra, dec):
+    This chapter uses ``B = 1/2 [[I+Q, U+iV], [U-iV, I-Q]]``. Consequently,
+    an unpolarized source of total flux density ``I`` contributes ``I/2`` to
+    each ideal parallel-hand correlation.
     """
-    Creates source information given the supplied arrays.
+    stokes = [np.asarray(component) for component in (I, Q, U, V)]
+    if any(component.ndim != 1 for component in stokes):
+        raise ValueError("Stokes parameters must be one-dimensional")
+    if any(component.shape != stokes[0].shape for component in stokes[1:]):
+        raise ValueError("I, Q, U, and V must have the same shape")
+    if any(np.iscomplexobj(component) for component in stokes):
+        raise ValueError("Stokes parameters must be real")
 
-    Arguments:
-        ra : ndarray/list
-            An array of shape (nsrc,) describing the
-            right ascension for each source in degrees.
-        dec : ndarray
-            An array of shape (nsrc,) describing the
-            declination for each source in degrees.
+    I, Q, U, V = (component.astype(float, copy=False) for component in stokes)
+    if not all(np.isfinite(component).all() for component in (I, Q, U, V)):
+        raise ValueError("Stokes parameters must be finite")
 
-    Returns:
-        A  (nsrc, 2) array containing
-        the l and m coordinates in radians
+    result = np.empty((I.size, 2, 2), dtype=np.complex128)
+    result[:, 0, 0] = 0.5 * (I + Q)
+    result[:, 0, 1] = 0.5 * (U + 1j * V)
+    result[:, 1, 0] = 0.5 * (U - 1j * V)
+    result[:, 1, 1] = 0.5 * (I - Q)
+    return result
+
+
+def lm_2_rad(ra, dec, phase_centre=None):
+    """Convert equatorial coordinates in degrees to direction cosines ``l,m``.
+
+    The returned values are dimensionless direction cosines, despite this
+    historical function name. By default the first coordinate is the phase
+    centre. Pass ``phase_centre=(ra0, dec0)`` in degrees to set it explicitly.
     """
+    ra = np.asarray(ra, dtype=float)
+    dec = np.asarray(dec, dtype=float)
+    if ra.ndim != 1 or dec.ndim != 1:
+        raise ValueError("ra and dec must be one-dimensional")
+    if ra.shape != dec.shape:
+        raise ValueError("ra and dec must have the same shape")
+    if ra.size == 0:
+        raise ValueError("ra and dec must contain at least one source")
+    if not np.isfinite(ra).all() or not np.isfinite(dec).all():
+        raise ValueError("ra and dec must be finite")
+    if np.any((dec < -90.0) | (dec > 90.0)):
+        raise ValueError("declinations must lie between -90 and 90 degrees")
 
-    # Sanity checks
-    assert ra.ndim == dec.ndim == 1, \
-        "Input arrays should only have one dimension."
-    assert ra.shape == dec.shape, \
-        "Input arrays do not have the same shape."
+    if phase_centre is None:
+        ra0, dec0 = ra[0], dec[0]
+    else:
+        centre = np.asarray(phase_centre, dtype=float)
+        if centre.shape != (2,) or not np.isfinite(centre).all():
+            raise ValueError("phase_centre must be a finite (ra, dec) pair")
+        ra0, dec0 = centre
+        if not -90.0 <= dec0 <= 90.0:
+            raise ValueError("phase-centre declination must be between -90 and 90")
 
-    # Right ascension (degrees) to radians
-    # Declination (degrees) to radians
-    # Right ascension deltas in radians
     ra_rad = np.deg2rad(ra)
     dec_rad = np.deg2rad(dec)
-    ra_delta_rad = ra_rad - ra_rad[0]
+    delta_ra = ra_rad - np.deg2rad(ra0)
+    dec0_rad = np.deg2rad(dec0)
 
-    # Create the empty lm array. Compute l and m.
-    nsrc = ra.shape[0]
-    lm = np.empty(shape=(nsrc,2), dtype=np.float64)
-    lm[:,0] = np.cos(dec_rad)*np.sin(ra_delta_rad)
-    lm[:,1] = np.sin(dec_rad)*np.cos(dec_rad[0]) - \
-        np.cos(dec_rad)*np.sin(dec_rad[0])*np.cos(ra_delta_rad)
+    l = np.cos(dec_rad) * np.sin(delta_ra)
+    m = (
+        np.sin(dec_rad) * np.cos(dec0_rad)
+        - np.cos(dec_rad) * np.sin(dec0_rad) * np.cos(delta_ra)
+    )
+    return np.column_stack((l, m))
 
-    return lm
-
-# Speed of light in metres
-C = 299792458
 
 def phase(lm, uvw, frequency):
+    """Compute per-source, per-antenna geometric phase terms.
+
+    ``lm`` contains dimensionless direction cosines, ``uvw`` is in metres,
+    and ``frequency`` is in Hz. The result has shape
+    ``(nsrc, ntime, na, nchan)`` and uses the negative-exponent convention.
     """
-    Compute the complex phase RIME term,
-    given lm and uvw coordinates, as well as
-    a list of frequencies.
+    lm = np.asarray(lm, dtype=float)
+    uvw = np.asarray(uvw, dtype=float)
+    frequency = np.asarray(frequency, dtype=float)
+    if lm.ndim != 2 or lm.shape[1] != 2:
+        raise ValueError("lm must have shape (nsrc, 2)")
+    if uvw.ndim != 3 or uvw.shape[2] != 3:
+        raise ValueError("uvw must have shape (ntime, na, 3)")
+    if frequency.ndim != 1:
+        raise ValueError("frequency must have shape (nchan,)")
+    if not all(np.isfinite(value).all() for value in (lm, uvw, frequency)):
+        raise ValueError("lm, uvw, and frequency must be finite")
 
-    Arguments:
-        lm : float array of shape (nsrc, 2)
-            lm coordinates for each source in radians
-        uvw : float array of shape (ntime, na, 3)
-            uvw coordinates for each antenna in metres
-        frequency : float array of shape (nchan)
-            frequencies for each channel in hz
+    radius_squared = np.sum(lm**2, axis=1)
+    if np.any(radius_squared > 1.0 + 1e-12):
+        raise ValueError("direction cosines must satisfy l**2 + m**2 <= 1")
 
-    Returns an array of complex values with
-    shape (nsrc, ntime, na, nchan) representing
-    the phase term.
-
-    """
-
-    assert lm.ndim == 2 and lm.shape[1] == 2, \
-        "lm array should have shape (nsrc, 2)"
-    assert uvw.ndim == 3 and uvw.shape[2] == 3, \
-        "uvw array should have shape (ntime, na, 3)"
-    assert frequency.ndim == 1, \
-        "frequency array should have shape (nchan)"
-
-    nsrc = lm.shape[0]
-    ntime, na = uvw.shape[0], uvw.shape[1]
-    nchan = frequency.shape[0]
-
-    # Reference l and m slices for convenenience and compute n from them
-    l, m = lm[:,0], lm[:,1]
-    n = np.sqrt(1.0 - l**2 - m**2) - 1.0
-
-    assert not np.isnan(n).any(), \
-        ("Some values of l and m produce invalid values for n."
-        "Check that 1 - l**2 - m**2 >= 0 holds for all l and m")
-
-    # Reference u, v and w for convenience
-    u, v, w = uvw[:,:,0], uvw[:,:,1], uvw[:,:,2]
-
-    # Compute phase from outer product of the source and uvw coordinates
-    phase =((np.outer(l, u) + np.outer(m, v) + np.outer(n, w))
-        .reshape(nsrc, ntime, na) )
-
-    # Now compute and return the complex phase
-    return np.exp(-2*np.pi*1j*phase[:,:,:,np.newaxis]
-        *frequency[np.newaxis,np.newaxis,np.newaxis,:]/C)
+    l = lm[:, 0, np.newaxis, np.newaxis]
+    m = lm[:, 1, np.newaxis, np.newaxis]
+    n_minus_one = (
+        np.sqrt(np.clip(1.0 - radius_squared, 0.0, None)) - 1.0
+    )[:, np.newaxis, np.newaxis]
+    geometric_delay = (
+        l * uvw[np.newaxis, :, :, 0]
+        + m * uvw[np.newaxis, :, :, 1]
+        + n_minus_one * uvw[np.newaxis, :, :, 2]
+    )
+    return np.exp(
+        -2j
+        * np.pi
+        * geometric_delay[:, :, :, np.newaxis]
+        * frequency[np.newaxis, np.newaxis, np.newaxis, :]
+        / C
+    )
 
 
 def dec_degrees(degree_str):
-    """ Convert a coordinate in DD:MM:SS.SS to decimal degrees """
-    degree, minute, second = (float(v) for v in degree_str.split(':'))
-    sign = -1.0 if degree_str.strip().startswith('-') else 1.0
+    """Convert ``DD:MM:SS.SS`` to decimal degrees."""
+    parts = degree_str.strip().split(":")
+    if len(parts) != 3:
+        raise ValueError("angle must use DD:MM:SS.SS format")
+    degree, minute, second = (float(value) for value in parts)
+    if not 0.0 <= minute < 60.0 or not 0.0 <= second < 60.0:
+        raise ValueError("minutes and seconds must lie in [0, 60)")
+    sign = -1.0 if degree_str.strip().startswith("-") else 1.0
     return sign * (abs(degree) + minute / 60.0 + second / 3600.0)
 
-"""
-Array location
-(nominal)    -30:43:17.34, 21:24:38.46, 1038
-(latitude - DD:MM:SS.SS, longitude - DD:MM:SS.SS, altitude above MSL - m)
-"""
-KAT7_location = [dec_degrees('-30:43:17.34'), dec_degrees('21:24:38.46'), float('1038')]
 
-"""
-Antenna 1   25.095, -9.095, 0.045 (East, North, Up in metres, offset from array location)
-Antenna 2   90.284, 26.380, -0.226
-Antenna 3   3.985, 26.893, 0.000
-Antenna 4   -21.605, 25.494, 0.019
-Antenna 5   -38.272, -2.592, 0.391
-Antenna 6   -61.595, -79.699, 0.702
-Antenna 7   -87.988, 75.754, 0.138
-"""
-KAT7_ants = np.array([
-    [25.095, -9.095, 0.045],
-    [90.284, 26.380, -0.226],
-    [3.985, 26.893, 0.000],
-    [-21.605, 25.494, 0.019],
-    [-38.272, -2.592, 0.391],
-    [-61.595, -79.699, 0.702],
-    [-87.988, 75.754, 0.138]
-], dtype=np.float64)
+KAT7_location = [
+    dec_degrees("-30:43:17.34"),
+    dec_degrees("21:24:38.46"),
+    1038.0,
+]
 
-def KAT7_antenna_uvw(ref_ra=60, ref_dec=45):
+# East, North, Up offsets from the nominal array location, in metres.
+KAT7_ants = np.array(
+    [
+        [25.095, -9.095, 0.045],
+        [90.284, 26.380, -0.226],
+        [3.985, 26.893, 0.000],
+        [-21.605, 25.494, 0.019],
+        [-38.272, -2.592, 0.391],
+        [-61.595, -79.699, 0.702],
+        [-87.988, 75.754, 0.138],
+    ],
+    dtype=np.float64,
+)
+
+
+def KAT7_antenna_uvw(hour_angle_start=60, ref_dec=45):
+    """Return KAT-7 antenna UVW coordinates relative to antenna zero."""
+    baseline_uvw = sim_uv(
+        hour_angle_start=hour_angle_start,
+        ref_dec=ref_dec,
+        observation_length_in_hrs=12,
+        integration_length=3,
+        enu_coords=KAT7_ants,
+        latitude=KAT7_location[0],
+    )
+
+    na = KAT7_ants.shape[0]
+    nbl = na * (na + 1) // 2
+    if baseline_uvw.shape[0] % nbl:
+        raise RuntimeError("sim_uv returned an incomplete time sample")
+    ntime = baseline_uvw.shape[0] // nbl
+    baseline_uvw = baseline_uvw.reshape(ntime, nbl, 3)
+
+    # The first na upper-triangle baselines are (0,0), (0,1), ..., (0,na-1).
+    antenna_uvw = -baseline_uvw[:, :na, :]
+    mapped = antenna_uvw[ap_index(ntime=ntime, na=na)]
+    if not np.allclose(mapped[0] - mapped[1], baseline_uvw):
+        raise RuntimeError("antenna coordinates do not reconstruct the baselines")
+    return antenna_uvw
+
+
+def rime(ant_uvw, sources, frequencies, phase_centre=None, verbose=False):
+    """Predict ideal point-source visibility matrices without Jones corruptions.
+
+    ``sources`` has columns ``[ra_deg, dec_deg, I, Q, U, V]``. By default its
+    first row defines the phase centre; an explicit ``(ra_deg, dec_deg)`` pair
+    may be supplied instead. Baselines use ``b_pq = r_p - r_q`` and include
+    autocorrelations. The output shape is ``(ntime, nbl, nchan, 2, 2)``.
     """
-    Returns the KAT7 antenna UVW coordinates for a given
-    pointing direction.
-    """
+    ant_uvw = np.asarray(ant_uvw, dtype=float)
+    sources = np.asarray(sources)
+    frequencies = np.asarray(frequencies, dtype=float)
+    if ant_uvw.ndim != 3 or ant_uvw.shape[2] != 3:
+        raise ValueError("ant_uvw must have shape (ntime, na, 3)")
+    if sources.ndim != 2 or sources.shape[1] != 6 or sources.shape[0] == 0:
+        raise ValueError("sources must have shape (nsrc, 6) with nsrc >= 1")
+    if frequencies.ndim != 1:
+        raise ValueError("frequencies must have shape (nchan,)")
+    if not np.isrealobj(sources):
+        raise ValueError("source coordinates and Stokes parameters must be real")
+    sources = sources.astype(float, copy=False)
+    if not all(np.isfinite(value).all() for value in (ant_uvw, sources, frequencies)):
+        raise ValueError("all RIME inputs must be finite")
 
-    # ref_ra = 0 to 360
-    # ref_dec = -90 to 90
+    ra, dec, I, Q, U, V = sources.T
+    lm = lm_2_rad(ra, dec, phase_centre=phase_centre)
+    source_brightness = brightness(I, Q, U, V)
+    antenna_phase = phase(lm, ant_uvw, frequencies)
 
-    bl_uvw = sim_uv(ref_ra=ref_ra, ref_dec=ref_dec,
-        observation_length_in_hrs=12, integration_length=3,
-        enu_coords=KAT7_ants, latitude=KAT7_location[0])
+    na = ant_uvw.shape[1]
+    ant_p, ant_q = np.triu_indices(na)
+    baseline_phase = antenna_phase[:, :, ant_p] * np.conj(
+        antenna_phase[:, :, ant_q]
+    )
+    visibilities = np.einsum(
+        "stbc,sij->tbcij", baseline_phase, source_brightness, optimize=True
+    )
 
-    # Check that we get the correct number of baselines
-    # including auto-correlations
-    na = KAT7_ants.shape[0]   
-    nbl = na*(na+1)//2 
-    ntime = bl_uvw.shape[0]//nbl
-    assert bl_uvw.shape == (ntime*nbl, 3)
-
-    bl_uvw = bl_uvw.reshape(ntime, nbl, 3)
-
-    # Take the 0:na slice as our antenna coordinates
-    # The na: slice can be derived from antenna coordinates
-    ant_uvw = -bl_uvw[:,0:na,:]
-
-    # Sanity check the result. Use per baseline antenna pair mappings
-    # to index the result array. This produces
-    # per antenna values for each baseline which,
-    # when differenced, should match the original
-    # baseline uvw coordinates
-    ap_idx = ap_index(ntime=ntime, na=na)
-
-    bl = ant_uvw[ap_idx]
-    assert np.allclose(bl[0] - bl[1], bl_uvw)
-
-    return ant_uvw
-
-
-def rime(ant_uvw, sources, frequencies):
-    """
-    Computes the RIME from the supplied argument.
-
-    Arguments:
-        ant_uvw : ndarray
-            An array of shape (ntime, na, 3) containing
-            the antenna UVW coordinates as they change
-            over time.
-        sources : ndarray
-            An array of shape (nsrc, 6) containing rows
-            with data [ra, dec, I, Q, U, V] defining the
-            point source coordinates and Stokes parameters
-            in degrees and Jy respectively. The first source
-            defines the phase centre.
-        frequencies: ndarray
-            An array of shape (nchan,) containing the
-            frequencies.
-
-    Returns a (ntime, nbl, nchan, 2, 2) ndarray of
-    complex visibilities
-    """
-    # Derive lm and brightness matrix from the above array
-    # *sources.T passes in transposed columns to the 
-    # l, m, Q, U, V function arguments
-    l, m, I, Q, U, V = sources.T
-
-    # Work out lm in radians and compute the brightness matrix
-    lm = lm_2_rad(l, m)
-    B = brightness(I, Q, U, V)
-
-    # Determine our problem dimensions
-    ntime, na, _ = ant_uvw.shape
-    nbl = na*(na+1)//2
-    nsrc, _ = lm.shape
-    nchan, = frequencies.shape
-
-    print('RIME Dimensions')
-    print('nsrc:   %s' % nsrc)
-    print('ntime:  %s' % ntime)
-    print('na:     %s' % na)
-    print('nbl:    %s' % nbl)
-    print('nchan:  %s' % nchan)
-
-    # Compute per antenna phase term
-    K_per_ant = phase(lm, ant_uvw, frequencies)
-
-    # Get an index that converts our per antenna values
-    # into per baseline values. K_pq = K_p K_q^H.
-    ap_idx = ap_index(nsrc=nsrc, ntime=ntime, na=na, nchan=nchan)
-    K_per_bl = K_per_ant[ap_idx]
-    K_p, K_q = K_per_bl[0], K_per_bl[1]
-
-    # Compute source coherencies
-    X_pqs = (K_p[:,:,:,:,np.newaxis,np.newaxis]*
-        B[:,np.newaxis,np.newaxis,np.newaxis,:]*
-        np.conj(K_q[:,:,:,:,np.newaxis,np.newaxis]))
-    assert X_pqs.shape == (nsrc, ntime, nbl, nchan, 2, 2)
-
-    # Sum over source dimension to produce visibilities
-    V_pq = X_pqs.sum(axis=0)
-    assert V_pq.shape == (ntime, nbl, nchan, 2, 2)
-
-    # Return visibilities
-    return V_pq.reshape(ntime, nbl, nchan, 2, 2)
+    if verbose:
+        ntime, nbl, nchan = visibilities.shape[:3]
+        print(
+            f"RIME dimensions: nsrc={sources.shape[0]}, ntime={ntime}, "
+            f"na={na}, nbl={nbl}, nchan={nchan}"
+        )
+    return visibilities

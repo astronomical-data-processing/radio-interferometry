@@ -35,8 +35,7 @@ e1sq = 0.00673949674228
 f = 1 / 298.257223563
 
 def cbrt(x):
-    if x >= 0: return pow(x, 1.0/3.0)
-    else: return -pow(np.abs(x), 1.0/3.0)
+    return np.cbrt(x)
 
 def geodetic2ecef(lat, lon, alt, degrees=True):
     """geodetic2ecef(lat, lon, alt)
@@ -62,6 +61,9 @@ def ecef2geodetic(x, y, z, degrees=True):
     Electronic Systems, vol. 30, pp. 957-961, 1994.
     https://en.wikipedia.org/wiki/Geographic_coordinate_conversion#The_application_of_Ferrari.27s_solution
     """
+    x, y, z = np.asarray(x), np.asarray(y), np.asarray(z)
+    if np.any((x == 0) & (y == 0) & (z == 0)):
+        raise ValueError("geodetic coordinates are undefined at the Earth's centre")
     r = np.sqrt(x * x + y * y)
     Esq = a * a - b * b
     F = 54. * b * b * z * z
@@ -76,10 +78,11 @@ def ecef2geodetic(x, y, z, degrees=True):
     V = np.sqrt(pow((r - esq * r_0), 2.) + (1. - esq) * z * z)
     Z_0 = b * b * z / (a * V)
     h = U * (1. - b * b / (a * V))
-    lat = np.arctan((z + e1sq * Z_0) / r)
+    lat = np.arctan2(z + e1sq * Z_0, r)
     lon = np.arctan2(y, x)
-    if degrees: return np.rad2deg(lat), np.rad2deg(lon), h
-    else: return lat, lon, h
+    if degrees:
+        return np.rad2deg(lat), np.rad2deg(lon), h
+    return lat, lon, h
 
 if __name__ == '__main__':
     print('Running test cases')

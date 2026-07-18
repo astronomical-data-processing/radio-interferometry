@@ -1,15 +1,16 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import numpy as np
+
+from array_coordinates import ecef_to_enu
 
 #*************************************************************************************
 #WESTERBORK 92m ANTENNA COORDINATES
 #*************************************************************************************
 
 NO_ANTENNA = 14
-NO_BASELINES = NO_ANTENNA * (NO_ANTENNA - 1) / 2 + NO_ANTENNA
-global CENTRE_CHANNEL
-CENTRE_CHANNEL = 299792458 / 1e9 #Wavelength of 1 GHz
+NO_BASELINES = NO_ANTENNA * (NO_ANTENNA + 1) // 2
+CENTRE_CHANNEL = 299792458 / 1e9  # Wavelength at 1 GHz
 #Antenna positions (from Measurement Set "ANTENNA" table)
 #Here we assumed these are in Earth Centred Earth Fixed coordinates, see:
 #https://en.wikipedia.org/wiki/ECEF
@@ -28,20 +29,7 @@ ANTENNA_POSITIONS = np.array([[ 3828763.10544699,   442449.10566454,  5064923.00
                               [ 3828594.76228709,   443903.3070022 ,  5064922.99963   ],
                               [ 3828454.02400919,   445119.11903552,  5064922.99071   ],
                               [ 3828445.7469865 ,   445190.63592735,  5064922.98793   ]])
-ARRAY_LATITUDE = 52.9157 #Equator->North
-ARRAY_LONGITUDE = 6.5950 #Greenwitch->East, prime -> local meridian
+ARRAY_LATITUDE = 52.9157  # Equator to north
+ARRAY_LONGITUDE = 6.5950  # Greenwich to east
 REF_ANTENNA = 0
-#Conversion from ECEF -> ENU:
-#http://www.navipedia.net/index.php/Transformations_between_ECEF_and_ENU_coordinates
-slambda = np.sin(np.deg2rad(ARRAY_LONGITUDE))
-clambda = np.cos(np.deg2rad(ARRAY_LONGITUDE))
-sphi = np.sin(ARRAY_LONGITUDE)
-cphi = np.cos(ARRAY_LATITUDE)
-ecef_to_enu = [[-slambda,clambda,0],
-               [-clambda*sphi,-slambda*sphi,cphi],
-               [clambda*cphi,slambda*cphi,sphi]]
-ENU = np.empty(ANTENNA_POSITIONS.shape)
-for a in range(0,NO_ANTENNA):
-    ENU[a,:] = np.dot(ecef_to_enu,ANTENNA_POSITIONS[a,:])
-ENU -= ENU[REF_ANTENNA]
-
+ENU = ecef_to_enu(ANTENNA_POSITIONS, ARRAY_LONGITUDE, ARRAY_LATITUDE, REF_ANTENNA)

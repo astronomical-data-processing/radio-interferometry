@@ -1,100 +1,74 @@
+from pathlib import Path
+
+import matplotlib.pyplot as plt
 import numpy as np
-import pylab as plt
-plt.rcParams['figure.figsize'] = (5, 7) #(width, height)
-
-def draw_orion():
-    names = ["Center","Betelgeuse","Rigel","Bellatrix","Mintaka","Alnilam","Alnitak","Saiph"]
-    RA = [5+30.0/60,5+55.0/60+10.3053/3600,5+14.0/60+32.272/3600,5+25.0/60+7.9/3600,5+32.0/60+0.4/3600,5+36.0/60+12.8/3600,5+40.0/60+45.5/3600,5+47.0/60+45.4/3600]
-    DEC = [0,7+24.0/60+25.426/3600,-8-12.0/60-5.91/3600,6+20.0/60+59.0/3600,-17.0/60-57.0/3600,-1-12.0/60-6.9/3600,-1-56.0/60-34.0/3600,-9-40.0/60-11.0/3600]
-
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    plt.plot(RA[0],DEC[0],"bx")
-    plt.plot(RA[1],DEC[1],"ro")
-    plt.plot(RA[2],DEC[2],"co")
-    plt.plot(RA[3:],DEC[3:],"go")   
-    counter = 1
-    for xy in zip(RA[1:], DEC[1:]):                                              
-        ax.annotate(names[counter], xy=xy, xytext=(4, 4), textcoords='offset points',horizontalalignment='left',
-            verticalalignment='top')  
-        counter = counter + 1
-    plt.xlim([5,6])
-    plt.xlabel("Right Ascension [h]")
-    plt.ylim([-11,11])
-    plt.ylabel("Declination [degrees]")
-    plt.gca().invert_xaxis()
-    plt.grid()
-    plt.savefig('orion_fig.png')
-    plt.show()  
-
-    C_RA = RA[0]*(np.pi/12)
-    print("C_RA = ", C_RA)
-    B_RA = RA[1]*(np.pi/12)
-    print("B_RA = ", B_RA)
-    R_RA = RA[2]*(np.pi/12)
-    print("R_RA = ", R_RA)
-
-    delta_B_RA = B_RA - C_RA 
-    print("delta_B_RA = ", delta_B_RA)
-    delta_R_RA = R_RA - C_RA
-    print("delta_R_RA = ", delta_R_RA)
-
-    C_DEC = DEC[0]*(np.pi/180)
-    print("C_DEC = ", C_DEC)
-    B_DEC = DEC[1]*(np.pi/180)
-    print("B_DEC = ", B_DEC)
-    R_DEC = DEC[2]*(np.pi/180)
-    print("R_DEC = ", R_DEC)
-
-    delta_B_DEC = B_DEC - C_DEC
-
-    l_B = np.cos(B_DEC)*np.sin(delta_B_RA)
-    print("l_B = ", l_B*(180/np.pi))
-    m_B = np.sin(B_DEC)*np.cos(C_DEC)-np.cos(B_DEC)*np.sin(C_DEC)*np.cos(delta_B_RA)
-    print("m_B = ", m_B*(180/np.pi))
-
-    l_R = np.cos(R_DEC)*np.sin(delta_R_RA)
-    print("l_R = ", l_R*(180/np.pi))
-    m_R = np.sin(R_DEC)*np.cos(R_DEC)-np.cos(R_DEC)*np.sin(C_DEC)*np.cos(delta_R_RA)
-    print("m_R = ", m_R*(180/np.pi))
-    
-    theta_1 = np.sqrt(l_B**2+m_B**2)*(180/np.pi)
-    theta_2 = np.arcsin(np.sqrt(l_B**2+m_B**2))*(180/np.pi)
-    theta_3 = np.arccos(np.cos(delta_B_RA)*np.cos(delta_B_DEC))*(180/np.pi)
-    theta_4 = np.sqrt(delta_B_RA**2 + delta_B_DEC)*(180/np.pi) 
-
-    print("theta_1 = ", theta_1)
-    print("theta_2 = ", theta_2)
-    print("theta_3 = ", theta_3)
-    print("theta_4 = ", theta_4)
 
 
-    RA_rad = np.array(RA)*(np.pi/12)
-    DEC_rad = np.array(DEC)*(np.pi/180)
-    RA_delta_rad = RA_rad-RA_rad[0]
+NAMES = np.array(
+    ["Center", "Betelgeuse", "Rigel", "Bellatrix", "Mintaka", "Alnilam", "Alnitak", "Saiph"]
+)
+RA_HOURS = np.array(
+    [
+        5 + 30 / 60,
+        5 + 55 / 60 + 10.3053 / 3600,
+        5 + 14 / 60 + 32.272 / 3600,
+        5 + 25 / 60 + 7.9 / 3600,
+        5 + 32 / 60 + 0.4 / 3600,
+        5 + 36 / 60 + 12.8 / 3600,
+        5 + 40 / 60 + 45.5 / 3600,
+        5 + 47 / 60 + 45.4 / 3600,
+    ]
+)
+DEC_DEGREES = np.array(
+    [
+        0,
+        7 + 24 / 60 + 25.426 / 3600,
+        -(8 + 12 / 60 + 5.91 / 3600),
+        6 + 20 / 60 + 59 / 3600,
+        -(17 / 60 + 57 / 3600),
+        -(1 + 12 / 60 + 6.9 / 3600),
+        -(1 + 56 / 60 + 34 / 3600),
+        -(9 + 40 / 60 + 11 / 3600),
+    ]
+)
 
-    l = np.cos(DEC_rad)*np.sin(RA_delta_rad)*(180/np.pi)
-    m = (np.sin(DEC_rad)*np.cos(DEC_rad[0])-np.cos(DEC_rad)*np.sin(DEC_rad[0])*np.cos(RA_delta_rad))*(180/np.pi)
-    print("l = ", l)
-    print("m = ", m)
-    plt.xlim([-8,8])
-    plt.ylim([-10,10])
-    plt.xlabel("$l$ [degrees]")
-    plt.ylabel("$m$ [degrees]")
-    plt.plot(l[0],m[0],"bx")
-    plt.plot(l[1],m[1],"ro")
-    plt.plot(l[2],m[2],"co")
-    plt.plot(l[3:],m[3:],"go") 
-    
-    counter = 1
-    for xy in zip(l[1:], m[1:]):                                              
-        ax.annotate(names[counter], xy=xy, xytext=(4, 4), textcoords='offset points',horizontalalignment='left',
-            verticalalignment='top')  
-        counter = counter + 1
-    plt.gca().invert_xaxis()
-    plt.grid()
-    plt.show()
 
-if  __name__=="__main__":
+def direction_cosines(ra_hours, dec_degrees, phase_center=0):
+    """Return l and m relative to one phase centre."""
+    ra = np.deg2rad(np.asarray(ra_hours) * 15.0)
+    dec = np.deg2rad(np.asarray(dec_degrees))
+    delta_ra = ra - ra[phase_center]
+    dec_0 = dec[phase_center]
+    l = np.cos(dec) * np.sin(delta_ra)
+    m = np.sin(dec) * np.cos(dec_0) - np.cos(dec) * np.sin(dec_0) * np.cos(delta_ra)
+    return l, m
+
+
+def draw_orion(output=Path(__file__).with_suffix(".png")):
+    """Draw the Orion coordinates used by the visibility-space problem set."""
+    fig, ax = plt.subplots(figsize=(5, 7))
+    colors = ["tab:red", "tab:cyan"] + ["tab:green"] * 5
+    ax.scatter(RA_HOURS[0], DEC_DEGREES[0], c="tab:blue", marker="x", s=55)
+    ax.scatter(RA_HOURS[1:], DEC_DEGREES[1:], c=colors)
+    ax.annotate("Phase center", (RA_HOURS[0], DEC_DEGREES[0]), xytext=(8, 10), textcoords="offset points")
+    label_offsets = {"Mintaka": (-8, 8), "Alnilam": (-8, -4)}
+    for name, x, y in zip(NAMES[1:], RA_HOURS[1:], DEC_DEGREES[1:]):
+        offset = label_offsets.get(name, (4, 4))
+        alignment = "right" if name in label_offsets else "left"
+        ax.annotate(
+            name,
+            (x, y),
+            xytext=offset,
+            textcoords="offset points",
+            horizontalalignment=alignment,
+        )
+    ax.set(xlim=(5, 6), ylim=(-11, 11), xlabel="Right Ascension [h]", ylabel="Declination [deg]")
+    ax.invert_xaxis()
+    ax.grid()
+    fig.savefig(output, dpi=150, bbox_inches="tight")
+    return fig
+
+
+if __name__ == "__main__":
     draw_orion()
-    
+    plt.show()

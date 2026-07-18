@@ -26,6 +26,8 @@ if __name__ == '__main__':
     o.add_option('-s', '--savefig', dest='savefig', default=None,
         help='Save figure')
     opts, args = o.parse_args(sys.argv[1:])
+    if len(args) != 1:
+        o.error('exactly one Measurement Set path is required')
 
     ms = tbls.table(args[0], readonly=True)
     uvw = ms.getcol('UVW')
@@ -73,7 +75,7 @@ if __name__ == '__main__':
             plt.plot(-1.*uvw[:,0], -1.*uvw[:,1], 'k.')
             plt.xlabel("uu (m)", fontsize=20)
             plt.ylabel("vv (m)", fontsize=20)
-        if not opts.limit is None:
+        if opts.limit is not None:
             limit = float(opts.limit)
             plt.xlim(-1.*limit, limit)
             plt.ylim(-1.*limit, limit)
@@ -83,5 +85,7 @@ if __name__ == '__main__':
         plt.grid(True)
         plt.title('uv Coverage')
 
-    if opts.savefig: plt.savefig(opts.savefig)
-    else: plt.show()
+    if opts.savefig:
+        plt.savefig(opts.savefig)
+    else:
+        plt.show()

@@ -16,12 +16,12 @@
 
 - [0_Introduction/0_introduction.ipynb](0_Introduction/0_introduction.ipynb)：总目录与阅读入口。
 - [0_Introduction/1_glossary.ipynb](0_Introduction/1_glossary.ipynb)：术语表。
-- `1_Radio_Science`：射电科学与基础天体物理背景。
-- `2_Mathematical_Groundwork`：傅里叶、采样、卷积、最小二乘、统计不确定度、正则化与过拟合等数学基础。
+- `1_Radio_Science`：射电科学、辐射传输与机制、谱线、单碟/阵列尺度及定量问题集。
+- `2_Mathematical_Groundwork`：傅里叶、采样、卷积、最小二乘、复数统计、正则化、一维 CLEAN、综合练习与 FFT 作业。
 - `3_Positional_Astronomy`：位置天文学、坐标系统、时间标准、参考系与精密天体测量边界；另有[定量问题集](3_Positional_Astronomy/3_problem_set.ipynb)。
-- `4_Visibility_Space`：基线、可见度、UV 覆盖、van Cittert-Zernike 定理、闭合量、缺短间距与 mosaicking。
-- `5_Imaging`：成像、权重、网格化、宽场效应与成像参数选择。
-- `6_Deconvolution`：去卷积、CLEAN、残差、图像质量、源搜索、正则化去卷积与残差统计。
+- `4_Visibility_Space`：基线、可见度、UV 覆盖、van Cittert-Zernike 定理、闭合量、缺短间距与 mosaicking；另有[100 分综合问题集](4_Visibility_Space/4_problem_set.ipynb)。
+- `5_Imaging`：成像、权重、网格化、宽场效应与成像参数选择；另有[综合问题集](5_Imaging/5_problem_set.ipynb)。
+- `6_Deconvolution`：去卷积、CLEAN、残差、图像质量、源搜索、正则化与目录选择函数；另有[100 分综合问题集](6_Deconvolution/6_problem_set.ipynb)。
 - `7_Observing_Systems`：RIME、主波束、极化、传播效应、RFI、系统温度、SEFD、观测日志与 QA；另有[定量问题集](7_Observing_Systems/7_problem_set.ipynb)。
 - `8_Calibration`：1GC、2GC、3GC、校准退化、模型不完备与解可信度；[校准习题](8_Calibration/8_problem_set.ipynb)包含可执行增益求解实验。
 - `9_Practical`：现代实践工作流、真实轻量样本包与项目练习材料。
@@ -104,7 +104,7 @@ python3 -m jupyter lab
 
 需要说明的是：
 
-- 第 1 至第 6 章保留了较多可运行的数值演示；第 7 章提供系统与 RIME 定量问题集，第 8 章提供可执行复增益求解实验，第 9.36 节及其轻量样本包提供文件核验、区域测量与误差预算路径。
+- 第 1 至第 6 章保留了较多可运行的数值演示；第 7 章提供系统与 RIME 定量问题集，第 8 章提供可执行复增益求解实验；第 9 章的 `practical_metrics.py`、9.36 节及其轻量样本包提供可测试公式、文件核验、区域测量与误差预算路径。
 - 部分历史页面、遗留示例或外部数据案例，仍可能需要额外依赖或数据文件。
 - 当前的 [requirements.txt](requirements.txt) 已经整理为“当前基础依赖列表”，适合作为仓库的默认安装入口；但它仍不是严格锁定版本的可复现实验环境文件。
 - 目前已确认 `ephem`、`healpy` 和 `aplpy` 都不再是当前仓库的活动依赖。
@@ -112,14 +112,11 @@ python3 -m jupyter lab
 
 ## 数据文件说明
 
-当前仓库中的大量重写内容已经尽量减少对外部大数据文件的依赖，但部分历史内容或原始数据示例仍可能需要 `data/` 目录下的额外文件。
+默认教材路径不再依赖外部大文件：当前 61 本含实际代码的 Notebook 均可在 Python 3.10 和 3.13 基础环境中执行。旧 Högbom 和 Clark CLEAN 页面会优先读取用户提供的历史 FITS 图像；文件不存在时，自动使用固定随机种子的合成脏图和 PSF。
 
-历史数据链接仍保留如下：
+原项目的两个 Dropbox 归档地址已经失效，因此不再由 `Makefile` 自动下载。`data/scripts/` 下的 WSClean、Tigger 和 Measurement Set 脚本仍作为历史工具入口保留，运行它们需要用户自行准备对应数据并安装外部射电软件；这些工具不属于默认 Notebook 回归范围。
 
-- FITS 图像数据：<https://www.dropbox.com/s/n3jyiajytwuldpu/fundamentals_fits.tar.gz?dl=0>
-- KAT-7 仿真 measurement set：<https://www.dropbox.com/s/kb3p2mthei8dgl9/simulated_KAT-7_ms.tar.gz?dl=0>
-
-若确实需要这些历史数据，可将其解压到仓库内对应的 `data/` 子目录中。后续如继续维护，建议优先采用相对路径和可配置路径变量，不要在 notebook、脚本或文档中写死个人机器路径。
+新增外部数据案例时，应记录公开来源、校验和、许可证和目标目录，并使用相对路径或可配置路径变量，不要写死个人机器路径。
 
 ## 维护与扩展
 
@@ -135,13 +132,6 @@ python3 -m jupyter lab
 - 实践页优先解释“这一步解决什么问题”，而不是简单堆命令。
 - 程序、脚本、notebook 和文档中不要写死个人机器上的绝对路径，例如 `/home/username/...`。
 
-第 8、9 章的部分重写工作曾使用生成脚本辅助完成：
-
-- [tools/rebuild_chapter8_notebooks.py](tools/rebuild_chapter8_notebooks.py)
-- [tools/rebuild_chapter9_notebooks.py](tools/rebuild_chapter9_notebooks.py)
-
-当前教材化版本以仓库中的 `.ipynb` 和静态图为准。若继续使用或修改生成脚本，需要先确认脚本不会重新引入已移除的旧式代码单元、HTML toggle 或与当前导航不一致的内容。
-
 ## 风格与编辑入口
 
 - [0_Introduction/0_introduction.ipynb](0_Introduction/0_introduction.ipynb)：总目录与结构入口。
@@ -152,10 +142,9 @@ python3 -m jupyter lab
 本项目基于原始英文教材项目继续发展。感谢原始英文版本的作者与贡献者为射电干涉教学社区打下的重要基础：
 
 - 原始英文仓库：<https://github.com/griffinfoster/fundamentals_of_interferometry>
-- 原始课程网站：<https://ratt-ru.github.io/fundamentals_of_interferometry/>
 
 中文版本在此基础上持续重写、整理和扩展，力图形成一套更适合中文教学与科研训练的系统教程。
 
 ## 许可证
 
-本项目采用 [GNU General Public License v3.0](LICENSE)。
+本仓库的原创代码、文字和由项目代码生成的图示采用 [GNU General Public License v3.0](LICENSE)。外部照片、论文图表和其他第三方素材保留各自的版权与许可条件，不因收录于本仓库而自动改用 GPLv3；当前溯源状态和新增素材规则见 [ASSET_PROVENANCE.md](ASSET_PROVENANCE.md)。
