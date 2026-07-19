@@ -1,21 +1,24 @@
-# 射电干涉孔径合成基础
+# 射电干涉教材系列
 
-本仓库是一套面向中文教学与科研训练场景的射电干涉基础与数据处理教程，采用 Jupyter Notebook 组织内容，覆盖从射电科学背景、数学基础、可见度空间、成像、去卷积、观测系统、校准，到实践工作流的完整主线。
+本仓库包含两册面向中文教学与科研训练的射电干涉教材，均采用 Jupyter Notebook 组织。第一册《射电干涉孔径合成基础》覆盖射电科学、数学、可见度、成像、观测系统和校准；第二册《射电干涉数据处理实践》覆盖数据检查、校准、成像、科学测量、质量控制和可复现课程项目。
 
 项目起源于原始英文教材 [Fundamentals of Radio Interferometry](https://github.com/griffinfoster/fundamentals_of_interferometry)。当前中文仓库已经不再是早期的双语镜像，而是在原有结构基础上进行了系统中文化、重写、扩写与实践重构，目标是形成一套适合中文教学与培训使用的专业教程。
 
 ## 当前状态
 
-- 第 1 至第 8 章主体内容已经完成系统中文重写与统一风格整理。
-- 第 9 章已经重构为一条连续的实践工作流，不再是零散截图式演示。
-- 当前版本已经具备一个完整可用的中文教材主体，后续重点主要是精修、加厚和继续提升训练深度，而不是补空白骨架。
+- 第一册由原第 1 至第 8 章组成，主体内容已经完成系统中文重写与统一风格整理。
+- 第二册由原第 9 章发展而来，已经建立独立入口和四条阅读路径；现有 `9.x` 编号暂时保留以兼容外部链接。
+- 当前版本已经具备两册完整可用的中文教材主体，后续重点是科学审校、内容去重和实践册重组，而不是补空白骨架。
 
-如果只看一句话：当前仓库已经可以作为一套完整的中文射电干涉基础教程使用。
+如果只看一句话：当前仓库已经形成“理论基础册 + 数据处理实践册”的两册体系。
 
 ## 内容结构
 
 - [0_Introduction/0_introduction.ipynb](0_Introduction/0_introduction.ipynb)：总目录与阅读入口。
 - [0_Introduction/1_glossary.ipynb](0_Introduction/1_glossary.ipynb)：术语表。
+
+### 第一册：《射电干涉孔径合成基础》
+
 - `1_Radio_Science`：射电科学、辐射传输与机制、谱线、单碟/阵列尺度及定量问题集。
 - `2_Mathematical_Groundwork`：傅里叶、采样、卷积、最小二乘、复数统计、正则化、一维 CLEAN、综合练习与 FFT 作业。
 - `3_Positional_Astronomy`：位置天文学、坐标系统、时间标准、参考系与精密天体测量边界；另有[定量问题集](3_Positional_Astronomy/3_problem_set.ipynb)。
@@ -24,11 +27,14 @@
 - `6_Deconvolution`：去卷积、CLEAN、残差、图像质量、源搜索、正则化与目录选择函数；另有[100 分综合问题集](6_Deconvolution/6_problem_set.ipynb)。
 - `7_Observing_Systems`：RIME、主波束、极化、传播效应、RFI、系统温度、SEFD、观测日志与 QA；另有[定量问题集](7_Observing_Systems/7_problem_set.ipynb)。
 - `8_Calibration`：1GC、2GC、3GC、校准退化、模型不完备与解可信度；[校准习题](8_Calibration/8_problem_set.ipynb)包含可执行增益求解实验。
+
+### 第二册：[《射电干涉数据处理实践》](9_Practical/9_0_introduction.ipynb)
+
 - `9_Practical`：现代实践工作流、真实轻量样本包、[WSRT/PyBDSF 产品复盘](9_Practical/9_37_pybdsf_real_product_replay.ipynb)、[BIMA Measurement Set 校准复盘](9_Practical/9_38_bima_measurement_set_calibration_replay.ipynb)与项目练习材料；另有[100 分综合实践问题集](9_Practical/9_problem_set.ipynb)。
 
-## 第 9 章实践部分
+## 第二册：射电干涉数据处理实践
 
-当前实践链已经形成比较完整的训练结构，包括：
+第二册已经形成比较完整的训练结构，包括：
 
 - 数据检查与初步质量控制
 - 基础校准流程
@@ -67,25 +73,25 @@
 - 综合课程项目设计：科学问题、里程碑、能力评价、分层任务、项目库、低面亮度连续谱案例与可选 Measurement Set 纵向复现训练
 - 真实轻量样本包与项目练习材料：可分发 `npy` 图像、局部噪声图、源表、区域文件、manifest、QA 摘要、报告模板、复查量规与分层任务
 
-若只从实践部分开始，建议直接阅读 [9_Practical/9_1_visualisation-inspection.ipynb](9_Practical/9_1_visualisation-inspection.ipynb)。
+若只学习数据处理实践，应从[第二册独立目录](9_Practical/9_0_introduction.ipynb)选择基础处理、科学专题、可复现工作流或课程项目路径。
 
 ## 如何开始阅读
 
 推荐顺序：
 
 1. 从 [0_Introduction/0_introduction.ipynb](0_Introduction/0_introduction.ipynb) 进入全书目录。
-2. 按章节顺序阅读第 1 到第 8 章理论部分。
-3. 再进入 [9_Practical/9_1_visualisation-inspection.ipynb](9_Practical/9_1_visualisation-inspection.ipynb)，按实践链顺序继续。
+2. 按章节顺序阅读第一册第 1 到第 8 章。
+3. 再进入[第二册目录](9_Practical/9_0_introduction.ipynb)，按课程目标选择阅读路径。
 
 如果只是局部查阅，也建议先看术语表和相关章节目录，避免不同章节之间的符号、术语和约定脱节。
 
 ## 适用层次
 
 - 本科高年级读者可以把第 1 至第 7 章作为主线，重点掌握辐射量、傅里叶分析、坐标系统、可见度、成像、去卷积和 RIME。
-- 硕士阶段读者应继续完成第 8 章校准习题，并在第 9 章中选择连续谱、谱线、偏振或宽场专题形成项目报告。
+- 硕士阶段读者应继续完成第一册第 8 章校准习题，并在第二册中选择连续谱、谱线、偏振或宽场专题形成项目报告。
 - 博士阶段或研究训练不能只阅读流程说明，还应使用真实 Measurement Set、校准表、weblog 或公开归档产品复现至少一条完整处理链。
 
-当前理论主线已经达到本科高年级教材所需的覆盖和数学深度；第 3、7 章已有综合定量问题集，第 8 章已有可执行校准实验，第 9.38 节已将同一求解器接入真实 BIMA Measurement Set 列。带独立归档身份、通量模型、完整校准表、重成像和最终 QA 的纵向复现属于第 9.35 节定义的可选课程综合训练，不是教材基础路径的缺口。详细判断见 [Roadmap.md](Roadmap.md)。
+第一册理论主线已经达到本科高年级教材所需的覆盖和数学深度；第 3、7 章已有综合定量问题集，第 8 章已有可执行校准实验。第二册现有 9.38 节已将同一求解器接入真实 BIMA Measurement Set 列；带独立归档身份、通量模型、完整校准表、重成像和最终 QA 的纵向复现属于现有 9.35 节定义的可选课程综合训练，不是教材基础路径的缺口。详细判断见 [Roadmap.md](Roadmap.md)。
 
 ## 运行方式
 
@@ -104,7 +110,7 @@ python3 -m jupyter lab
 
 需要说明的是：
 
-- 第 1 至第 6 章保留了较多可运行的数值演示；第 7 章提供系统与 RIME 定量问题集，第 8 章提供可执行复增益求解实验；第 9 章的 `practical_metrics.py`、9.36 节及其轻量样本包提供可测试公式、文件核验、区域测量与误差预算路径。
+- 第一册第 1 至第 6 章保留了较多可运行的数值演示；第 7 章提供系统与 RIME 定量问题集，第 8 章提供可执行复增益求解实验；第二册的 `practical_metrics.py`、现有 9.36 节及其轻量样本包提供可测试公式、文件核验、区域测量与误差预算路径。
 - 部分历史页面、遗留示例或外部数据案例，仍可能需要额外依赖或数据文件。
 - 当前的 [requirements.txt](requirements.txt) 已经整理为“当前基础依赖列表”，适合作为仓库的默认安装入口；但它仍不是严格锁定版本的可复现实验环境文件。
 - 目前已确认 `ephem`、`healpy` 和 `aplpy` 都不再是当前仓库的活动依赖。
