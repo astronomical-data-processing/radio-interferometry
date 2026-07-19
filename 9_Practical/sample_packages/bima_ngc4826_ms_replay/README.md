@@ -24,6 +24,8 @@ formal gain inverse variance. Final gains use all 21 baselines; a separate
 connected 14-baseline solve is
 validated on seven baselines that were excluded from fitting. These products
 allow the core notebook to run without CASA or casacore.
+`derived/ms_metadata.yaml` records the SOURCE, SYSCAL, OBSERVATION and HISTORY
+evidence that is available without expanding the archive at run time.
 `extract_visibility.py` documents and reproduces the selection when
 `python-casacore` is available:
 
@@ -54,4 +56,8 @@ calibration; it does not establish an absolute flux scale. The calibrator and
 target data are separated by about 989 seconds, so the notebook does not claim
 that the calibrator gains can be transferred synchronously to the target
 mosaic; doing that would require a time-dependent calibration model and
-additional observing metadata.
+additional observing metadata. The MS does retain `TSYS`, `BIMA_JYPERK=140`
+and HISTORY flags for passband/amplitude calibration, but the main `DATA`
+column has no physical unit and the SOURCE table has no flux column. Those
+facts are evidence of upstream calibration provenance, not an independent
+absolute flux model.

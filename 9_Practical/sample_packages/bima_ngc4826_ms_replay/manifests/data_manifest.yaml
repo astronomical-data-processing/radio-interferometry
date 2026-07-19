@@ -46,6 +46,10 @@ files:
     role: per-integration relative scalar gains with baseline-holdout QA
     generated_by: analyze_ms.py --write-gain-table
     sha256: ffbb8b0fe9ce264f777f4a8ed3574f769b4b1f519323791ceb2be6d9da31ab9f
+  - path: derived/ms_metadata.yaml
+    role: TaQL-derived SOURCE, SYSCAL, OBSERVATION and HISTORY evidence summary
+    generated_by: casacore TaQL table inspection
+    sha256: e72884189c1074399409da0b31bb76f460622ac1ee4024215d7d493da0fd6125
   - path: LICENSE-casacore
     role: verbatim upstream repository license
     source_path: COPYING

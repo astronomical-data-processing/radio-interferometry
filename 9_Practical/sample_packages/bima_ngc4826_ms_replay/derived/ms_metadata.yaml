@@ -1,0 +1,56 @@
+schema_version: 1
+derived_from: mssel_test_small_multifield_spw.ms.tgz
+main_table:
+  rows: 14985
+  data_column_quantum_units: []
+  uvw_units: [m, m, m]
+  time_reference: UTC
+source_table:
+  rows: 5
+  source_ids: [0, 1, 2, 3, 4]
+  unique_names: [3C273, 1310+323, NGC4826]
+  records:
+    - source_id: 0
+      name: 3C273
+      rest_frequency_hz_taql_display: null
+    - source_id: 1
+      name: 1310+323
+      rest_frequency_hz_taql_display: null
+    - source_id: 2
+      name: NGC4826
+      rest_frequency_hz_taql_display: "1.15271e+11"
+    - source_id: 3
+      name: 1310+323
+      rest_frequency_hz_taql_display: null
+    - source_id: 4
+      name: NGC4826
+      rest_frequency_hz_taql_display: "1.15271e+11"
+  numeric_display_precision: TaQL default output, six significant digits
+  flux_column_present: false
+syscal:
+  rows: 20
+  antenna_ids: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+  time_samples: 2
+  tsys_k_range: [706.741, 1475.37]
+  tsys_flag_values: [false]
+  bima_jyperk_values: [140.0]
+observation:
+  rows: 5
+  telescope: BIMA
+  project: t108c115.n48
+  schedule_log: See HISTORY for BIMA observing log
+history:
+  initial_application: MirFiller
+  input_program: MINTERFEROMETER version 5.9 7jun97
+  integration_seconds: 11.5
+  passband_calibration_switch: true
+  amplitude_calibration_switch: true
+  conversion_message: Converted from miriad format into AIPS++ MS2
+  initial_3c273_fill_records: 2925
+absolute_flux_scale:
+  data_column_units_present: false
+  source_flux_column_present: false
+  syscal_jyperk_present: true
+  upstream_calibration_switches_present: true
+  usable_for_absolute_jy_claim: false
+  reason: No independent calibrator flux model or archive provenance is retained.

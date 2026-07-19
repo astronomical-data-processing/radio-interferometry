@@ -88,6 +88,11 @@ def visibility_summary():
     }
 
 
+def metadata_summary():
+    path = ROOT / "derived" / "ms_metadata.yaml"
+    return yaml.safe_load(path.read_text(encoding="utf-8"))
+
+
 def coverage_summary():
     coverage = _load_extract("target_ngc4826_mosaic_coverage.npz")
     calibrator = _load_extract("calibrator_3c273_ddid0.npz")
@@ -303,6 +308,7 @@ def main():
 
     summaries = (
         ("visibility", visibility_summary()),
+        ("metadata evidence", metadata_summary()),
         ("mosaic coverage", coverage_summary()),
         ("relative calibration", calibration_summary()),
         ("solution intervals", calibration_interval_summary()),

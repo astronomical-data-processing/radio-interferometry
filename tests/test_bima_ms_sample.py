@@ -20,11 +20,19 @@ SPEC.loader.exec_module(SAMPLE)
 
 class BimaMeasurementSetTests(unittest.TestCase):
     def test_checksums(self):
-        self.assertEqual(len(SAMPLE.verify_checksums()), 7)
+        self.assertEqual(len(SAMPLE.verify_checksums()), 8)
 
     def test_archive_has_required_subtables(self):
         subtables = SAMPLE.archive_subtables()
         self.assertTrue({"ANTENNA", "FIELD", "SPECTRAL_WINDOW"} <= subtables)
+
+    def test_metadata_summary_marks_absolute_scale_boundary(self):
+        metadata = SAMPLE.metadata_summary()
+        self.assertEqual(metadata["main_table"]["rows"], 14985)
+        self.assertFalse(metadata["source_table"]["flux_column_present"])
+        self.assertEqual(metadata["syscal"]["bima_jyperk_values"], [140.0])
+        self.assertTrue(metadata["history"]["amplitude_calibration_switch"])
+        self.assertFalse(metadata["absolute_flux_scale"]["usable_for_absolute_jy_claim"])
 
     def test_visibility_extracts(self):
         summary = SAMPLE.visibility_summary()
