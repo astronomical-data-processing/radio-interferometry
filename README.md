@@ -7,7 +7,7 @@
 ## 当前状态
 
 - 第一册由原第 1 至第 8 章组成，主体内容已经完成系统中文重写与统一风格整理。
-- 第二册由原第 9 章发展而来，已经建立独立入口和四条阅读路径；现有 `9.x` 编号暂时保留以兼容外部链接。
+- 第二册由原第 9 章发展而来，已经建立独立入口、四条阅读路径和可测试的页面分类；现有 `9.x` 编号暂时保留以兼容外部链接。
 - 当前版本已经具备两册完整可用的中文教材主体，后续重点是科学审校、内容去重和实践册重组，而不是补空白骨架。
 
 如果只看一句话：当前仓库已经形成“理论基础册 + 数据处理实践册”的两册体系。
@@ -31,6 +31,7 @@
 ### 第二册：[《射电干涉数据处理实践》](9_Practical/9_0_introduction.ipynb)
 
 - `9_Practical`：现代实践工作流、真实轻量样本包、[WSRT/PyBDSF 产品复盘](9_Practical/9_37_pybdsf_real_product_replay.ipynb)、[BIMA Measurement Set 校准复盘](9_Practical/9_38_bima_measurement_set_calibration_replay.ipynb)与项目练习材料；另有[100 分综合实践问题集](9_Practical/9_problem_set.ipynb)。
+- [book_manifest.yaml](9_Practical/book_manifest.yaml)：记录第二册每一页所属阅读路径、页面类型和教学层级，并由测试检查目录覆盖。
 
 ## 第二册：射电干涉数据处理实践
 
