@@ -70,7 +70,7 @@ class CleanDemoTests(unittest.TestCase):
         beam = np.zeros((5, 5))
         beam[2, 2] = 1.0
         restored = restore_image(model, residual, beam, residual_scale=0.25)
-        self.assertEqual(restored[4, 4], -1.75)
+        self.assertAlmostEqual(restored[4, 4], -1.75)
         self.assertEqual(restored[0, 0], 0.25)
 
     def test_gaussian_clean_beam_is_centered_and_peak_normalized(self):

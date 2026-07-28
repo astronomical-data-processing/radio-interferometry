@@ -76,7 +76,7 @@ def rm_synthesis(complex_polarization, lambda_squared, faraday_depth, weights=No
     dirty_spectrum = np.tensordot(
         polarization * weights, kernel, axes=([-1], [0])
     ) / weight_sum
-    rmsf = weights @ kernel / weight_sum
+    rmsf = np.sum(weights[:, None] * kernel, axis=0) / weight_sum
     return dirty_spectrum, rmsf, lambda0_squared
 
 
