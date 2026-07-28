@@ -8,7 +8,7 @@
 
 - 第一册由原第 1 至第 8 章组成，主体内容已经完成系统中文重写与统一风格整理。
 - 第二册由原第 9 章发展而来，已经建立独立入口、四条阅读路径和可测试的页面分类；现有 `9.x` 编号暂时保留以兼容外部链接。
-- 当前版本已经具备两册完整可用的中文教材主体，后续重点是科学审校、内容去重和实践册重组，而不是补空白骨架。
+- 当前版本已经具备两册完整可用的中文教材主体；这表示课程主线、练习和实验入口已经成立，不表示逐式科学复核、跨章去重和发布级校对从此结束。
 
 如果只看一句话：当前仓库已经形成“理论基础册 + 数据处理实践册”的两册体系。
 
@@ -30,7 +30,7 @@
 
 ### 第二册：[《射电干涉数据处理实践》](9_Practical/9_0_introduction.ipynb)
 
-- `9_Practical`：现代实践工作流、真实轻量样本包、[WSRT/PyBDSF 产品复盘](9_Practical/9_37_pybdsf_real_product_replay.ipynb)、[BIMA Measurement Set 校准复盘](9_Practical/9_38_bima_measurement_set_calibration_replay.ipynb)与项目练习材料；另有[100 分综合实践问题集](9_Practical/9_problem_set.ipynb)。
+- `9_Practical`：现代实践工作流、真实轻量样本包、[WSRT/PyBDSF 产品复盘](9_Practical/9_37_pybdsf_real_product_replay.ipynb)、[BIMA Measurement Set 校准复盘](9_Practical/9_38_bima_measurement_set_calibration_replay.ipynb)、[VLA 3C391 公开归档绝对校准实验](9_Practical/9_39_vla_3c391_archive_calibration.ipynb)与项目练习材料；另有[100 分综合实践问题集](9_Practical/9_problem_set.ipynb)。
 - [book_manifest.yaml](9_Practical/book_manifest.yaml)：记录第二册每一页所属阅读路径、页面类型和教学层级，并由测试检查目录覆盖。
 
 ## 第二册：射电干涉数据处理实践
@@ -73,6 +73,7 @@
 - 处理报告与复查量规：证据主线、报告结构、误差预算、复查循环、常见失败模式与结论降级
 - 综合课程项目设计：科学问题、里程碑、能力评价、分层任务、项目库、低面亮度连续谱案例与可选 Measurement Set 纵向复现训练
 - 真实轻量样本包与项目练习材料：可分发 `npy` 图像、局部噪声图、源表、区域文件、manifest、QA 摘要、报告模板、复查量规与分层任务
+- VLA 3C391 公开归档实验：固定来源和 SHA-256、Perley-Butler 2017 绝对标度、延迟/带通/时间增益、mosaic 成像、机器可读 QA 与 mask 失败模式
 
 若只学习数据处理实践，应从[第二册独立目录](9_Practical/9_0_introduction.ipynb)选择基础处理、科学专题、可复现工作流或课程项目路径。
 
@@ -92,7 +93,7 @@
 - 硕士阶段读者应继续完成第一册第 8 章校准习题，并在第二册中选择连续谱、谱线、偏振或宽场专题形成项目报告。
 - 博士阶段或研究训练不能只阅读流程说明，还应使用真实 Measurement Set、校准表、weblog 或公开归档产品复现至少一条完整处理链。
 
-第一册理论主线已经达到本科高年级教材所需的覆盖和数学深度；第 3、7 章已有综合定量问题集，第 8 章已有可执行校准实验。第二册现有 9.38 节已将同一求解器接入真实 BIMA Measurement Set 列；带独立归档身份、通量模型、完整校准表、重成像和最终 QA 的纵向复现属于现有 9.35 节定义的可选课程综合训练，不是教材基础路径的缺口。详细判断见 [Roadmap.md](Roadmap.md)。
+第一册理论主线已经达到本科高年级教材所需的覆盖和数学深度；第 3、7 章已有综合定量问题集，第 8 章已有可执行校准实验。第二册 9.38 节把同一求解器接入真实 BIMA Measurement Set 列，9.39 节进一步用有独立归档身份和通量模型的 VLA 3C391 数据验证了绝对标度、完整校准转移、mosaic 重成像和最终 QA。9.39 是可选课程纵向训练，不是默认依赖 CASA 和大型数据的基础路径。详细判断见 [Roadmap.md](Roadmap.md)。
 
 ## 运行方式
 
@@ -115,11 +116,11 @@ python3 -m jupyter lab
 - 部分历史页面、遗留示例或外部数据案例，仍可能需要额外依赖或数据文件。
 - 当前的 [requirements.txt](requirements.txt) 已经整理为“当前基础依赖列表”，适合作为仓库的默认安装入口；但它仍不是严格锁定版本的可复现实验环境文件。
 - 目前已确认 `ephem`、`healpy` 和 `aplpy` 都不再是当前仓库的活动依赖。
-- `itrf2enu.py` 已经是纯 NumPy 实现；历史 Measurement Set 绘图脚本和 9.38 样本的重新提取需要可选的 `python-casacore`。9.38 的默认复盘使用已校验的 NumPy 提取包，不增加基础依赖。WSClean、CASA、Pyxis/Tigger 等外部射电软件不属于基础 Python 依赖。
+- `itrf2enu.py` 已经是纯 NumPy 实现；历史 Measurement Set 绘图脚本和 9.38 样本的重新提取需要可选的 `python-casacore`。9.38 的默认复盘使用已校验的 NumPy 提取包，不增加基础依赖。9.39 默认只读取 manifest 和参考指标，完整流水线另用 CASA 6.7 环境。WSClean、CASA、Pyxis/Tigger 等外部射电软件不属于基础 Python 依赖。
 
 ## 数据文件说明
 
-默认教材路径不再依赖外部大文件：当前 64 本含实际代码的 Notebook 均可在 Python 3.10 和 3.13 基础环境中执行。旧 Högbom 和 Clark CLEAN 页面会优先读取用户提供的历史 FITS 图像；文件不存在时，自动使用固定随机种子的合成脏图和 PSF。
+默认教材路径不依赖外部大文件：当前 71 本含实际代码的 Notebook 均纳入 Python 3.10 和 3.13 基础环境回归。9.39 的 3C391 原始 MS 只在课程扩展运行时按固定 URL、长度和 SHA-256 下载，不进入 Git。旧 Högbom 和 Clark CLEAN 页面会优先读取用户提供的历史 FITS 图像；文件不存在时，自动使用固定随机种子的合成脏图和 PSF。
 
 原项目的两个 Dropbox 归档地址已经失效，因此不再由 `Makefile` 自动下载。`data/scripts/` 下的 WSClean、Tigger 和 Measurement Set 脚本仍作为历史工具入口保留，运行它们需要用户自行准备对应数据并安装外部射电软件；这些工具不属于默认 Notebook 回归范围。
 

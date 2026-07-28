@@ -1,0 +1,66 @@
+schema_version: 1
+sample_id: vla-3c391-casa-tutorial-spw0-v1
+retrieved_utc: "2026-07-28"
+source:
+  tutorial: https://casaguides.nrao.edu/index.php/VLA_Continuum_Tutorial_3C391-CASA6.7.2
+  data_url: https://casa.nrao.edu/Data/EVLA/3C391/3c391_ctm_mosaic_10s_spw0.ms.tgz
+  archive_execution_block: TDEM0001_sb1218006_1.55310.33439732639
+  access_status: Public NRAO/CASA tutorial download
+  redistribution_status: No standalone redistribution license was found; data are not bundled or relicensed
+archive:
+  filename: 3c391_ctm_mosaic_10s_spw0.ms.tgz
+  bytes: 3271507505
+  sha256: 9152b1ce8603a3b0ffd50ce3d3c57f53a82e6fde89fd6a4b5fa4f8c7d8481910
+  expanded_size_gib_approx: 5.6
+observation:
+  project: TDEM0001
+  telescope: Karl G. Jansky Very Large Array
+  configuration: D
+  date: "2010-04-24"
+  target: 3C391 seven-field mosaic
+  flux_bandpass_calibrator: J1331+3030 (3C286)
+  gain_calibrator: J1822-0938
+  polarization_calibrator: J0319+4130 (3C84)
+  original_spectral_windows_ghz: [4.6, 7.5]
+  original_bandwidth_mhz_per_window: 128
+tutorial_measurement_set:
+  rows: 845379
+  antennas: 26
+  spectral_windows: 1
+  channels: 64
+  channel_width_mhz: 2
+  frequency_range_ghz: [4.536, 4.662]
+  correlations: [RR, RL, LR, LL]
+  integration_s: 10
+  retained_from_original: 4.6 GHz spectral window, averaged from 1 s to 10 s
+  columns: [DATA, UVW, WEIGHT, FLAG, MODEL_DATA, CORRECTED_DATA]
+  initial_state:
+    flag_fraction: 0.0
+    corrected_data_equals_data: true
+    weight_spectrum_initialized: false
+    weight_note: Run statwt on the calibrated target split before treating weights as inverse variance in Jy^-2
+calibration_contract:
+  flux_standard: Perley-Butler 2017
+  flux_model_image: 3C286_C.im
+  reference_antenna: ea21
+  target_correlations_after_split: [RR, LL]
+  manual_flags:
+    scan: "1"
+    antennas_before_solve: [ea13, ea15]
+    antenna_after_initial_phase: ea05
+    quack_seconds_at_scan_start: 10
+  antenna_position_offsets_m:
+    ea01: [0.0, 0.0030, 0.0]
+    ea02: [-0.0008, 0.0, 0.0]
+    ea03: [-0.0028, 0.0, 0.0]
+    ea05: [0.0, 0.0028, 0.0]
+    ea11: [0.0009, 0.0, 0.0]
+    ea12: [-0.0100, 0.0045, -0.0017]
+    ea13: [0.0, -0.0008, 0.0]
+    ea17: [-0.0012, 0.0, 0.0]
+    ea18: [0.0004, -0.0008, 0.0004]
+    ea22: [-0.0257, 0.0027, -0.0190]
+    ea23: [-0.0014, 0.0, 0.0]
+    ea24: [-0.0015, 0.0, 0.0]
+    ea26: [-0.0019, 0.0, 0.0021]
+    ea27: [0.0, 0.0019, -0.0016]

@@ -160,6 +160,10 @@ pages:
     track: project
     type: experiment
     level: course
+  - path: 9_39_vla_3c391_archive_calibration.ipynb
+    track: project
+    type: experiment
+    level: course
   - path: 9_problem_set.ipynb
     track: project
     type: project

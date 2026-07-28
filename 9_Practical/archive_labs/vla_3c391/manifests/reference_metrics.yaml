@@ -1,0 +1,53 @@
+schema_version: 1
+validated_utc: "2026-07-28"
+environment:
+  python: "3.10"
+  casatasks: 6.7.0.31
+  casatools: 6.7.0.31
+  casadata: 2025.9.22
+flux_model:
+  name: Perley-Butler 2017 3C286
+  log10_polynomial_coefficients: [1.2481, -0.4507, -0.1798, 0.0357]
+  checkpoints:
+    - {frequency_ghz: 4.535, flux_jy: 7.669635}
+    - {frequency_ghz: 4.536, flux_jy: 7.668552}
+    - {frequency_ghz: 4.601, flux_jy: 7.598895}
+    - {frequency_ghz: 4.665, flux_jy: 7.531733}
+calibration:
+  parameters:
+    reference_antenna: ea21
+    target_fields: "2~8"
+    target_correlations: RR,LL
+  setjy_3c286_flux_jy: {value: 7.6685524, atol: 0.01}
+  gain_calibrator_flux_jy: {value: 2.2960073, atol: 0.02}
+  gain_calibrator_flux_error_jy: {value: 0.0069219, atol: 0.004}
+  valid_fluxscale_solutions: 46
+  science_flag_fraction: {value: 0.3455225, atol: 0.01}
+  target_fields: [3C391 C1, 3C391 C2, 3C391 C3, 3C391 C4, 3C391 C5, 3C391 C6, 3C391 C7]
+  target_field_flag_fraction_range: [0.33, 0.36]
+  fully_flagged_antennas: [ea05, ea13, ea15]
+  delay_solution_ns:
+    valid_solutions: 46
+    minimum: {value: -3.8506012, atol: 0.2}
+    maximum: {value: 4.5584397, atol: 0.2}
+imaging:
+  parameters:
+    gridder: mosaic
+    imsize: [480, 480]
+    cell_arcsec: 2.5
+    weighting: briggs
+    robust: 0.5
+    scales_pixels: [0, 5, 15, 45]
+    threshold_mjy_per_beam: 1.0
+  restoring_beam:
+    major_arcsec: {value: 17.0065, atol: 0.5}
+    minor_arcsec: {value: 14.9104, atol: 0.5}
+    position_angle_deg: {value: 21.0034, atol: 3.0}
+  dirty_peak_jy_per_beam: {value: 0.122880, atol: 0.01}
+  restored_peak_jy_per_beam: {value: 0.130091, atol: 0.01}
+  residual_rms_jy_per_beam: {value: 0.0005699, atol: 0.00025}
+  residual_absolute_extreme_max_jy_per_beam: 0.003
+interpretation:
+  status: reproducible_course_baseline
+  known_failure_mode: Fixed broad mask can admit negative or divergent large-scale minor cycles
+  publication_claim_supported: false
