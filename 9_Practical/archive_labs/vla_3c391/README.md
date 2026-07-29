@@ -56,13 +56,49 @@ python audit_results.py --results-dir /scratch/vla_3c391/run
 python audit_results.py --results-dir /scratch/vla_3c391/run --require-imaging
 ```
 
+Compare the validated mask choices without repeating calibration:
+
+```bash
+python run_imaging_sensitivity.py \
+  --science-ms /scratch/vla_3c391/run/3c391_ctm_mosaic_spw0.ms \
+  --work-dir /scratch/vla_3c391/sensitivity
+```
+
+The script runs three mask choices with common imaging parameters, followed by
+one diagnostic that keeps the broad mask but removes the 45-pixel CLEAN scale.
+It records mask area, model positive and negative sums, residual statistics and
+spatial correlation, restoring beam, CASA stopping code, and relevant log
+warnings in `imaging_sensitivity.json`. Its work directory must be empty; use
+`--variants` to run a selected subset in a separate directory.
+
+## Validated sensitivity result
+
+All statistics below use the common region with primary-beam response at least
+0.2. The beam remains 17.01 by 14.91 arcsec in every run.
+
+| Variant | Model sum (Jy) | Negative absolute fraction | Residual RMS (mJy/beam) | Divergence warnings |
+| --- | ---: | ---: | ---: | ---: |
+| Broad 130-pixel circle | 3.788 | 25.6% | 0.570 | 11 |
+| Tight 100-pixel circle | 5.539 | 12.9% | 0.840 | 8 |
+| Conservative auto-mask | 8.070 | 0.7% | 0.645 | 17 |
+| Broad circle, scales `[0,5,15]` | 3.540 | 24.9% | 0.737 | 0 |
+
+No tested variant supports a stronger scientific product. The tight mask
+creates strong boundary residuals. The auto-mask follows the source more
+closely and suppresses negative model components, but nearly doubles the model
+sum relative to the regression baseline, leaves correlated rings, and produces
+more divergence warnings. Removing the largest scale eliminates those warnings
+but leaves much stronger beam-scale residual correlation. These are distinct
+failure trade-offs, not a ranking based on residual RMS alone.
+
 ## Interpretation boundary
 
 The fixed imaging recipe is a reproducible course baseline, not a publication
 recipe. It uses Briggs robust 0.5, mosaic gridding, multiscale CLEAN, and a
 fixed circular mask. In the validation run CASA stopped minor cycles when a
 large-scale component became negative or divergent; correlated rings remain
-in the residual. The resulting beam, peak, and residual statistics are useful
-for regression and diagnosis, but a scientific release requires a reviewed
-mask, residual inspection, parameter sensitivity tests, primary-beam-aware
-measurements, and a documented stopping decision.
+in the residual. A controlled sensitivity study did not identify a better
+mask/scale recipe, so the broad-mask result remains only the regression
+baseline. A scientific release still requires additional visibility and PSF
+diagnosis, an independently reviewed source-support model, primary-beam-aware
+measurements, uncertainty propagation, and a documented stopping decision.

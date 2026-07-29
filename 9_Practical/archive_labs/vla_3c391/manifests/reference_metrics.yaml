@@ -1,5 +1,5 @@
 schema_version: 1
-validated_utc: "2026-07-28"
+validated_utc: "2026-07-29"
 environment:
   python: "3.10"
   casatasks: 6.7.0.31
@@ -47,6 +47,43 @@ imaging:
   restored_peak_jy_per_beam: {value: 0.130091, atol: 0.01}
   residual_rms_jy_per_beam: {value: 0.0005699, atol: 0.00025}
   residual_absolute_extreme_max_jy_per_beam: 0.003
+imaging_sensitivity:
+  common_region: primary beam response >= 0.2
+  fixed_broad:
+    mask_fraction: 0.45723
+    model_sum_jy: 3.78836
+    model_negative_absolute_fraction: 0.25637
+    residual_rms_mjy_per_beam: 0.56988
+    residual_one_beam_correlation_xy: [0.59477, 0.70137]
+    divergence_warnings: 11
+  fixed_tight:
+    mask_fraction: 0.27064
+    model_sum_jy: 5.53934
+    model_negative_absolute_fraction: 0.12911
+    residual_rms_mjy_per_beam: 0.84018
+    residual_one_beam_correlation_xy: [0.74131, 0.78192]
+    divergence_warnings: 8
+  auto_conservative:
+    mask_fraction: 0.18359
+    model_sum_jy: 8.06991
+    model_negative_absolute_fraction: 0.00723
+    residual_rms_mjy_per_beam: 0.64480
+    residual_one_beam_correlation_xy: [0.63037, 0.73399]
+    divergence_warnings: 17
+    ignored_scale_warnings: 1
+  fixed_broad_restricted_scales:
+    scales_pixels: [0, 5, 15]
+    mask_fraction: 0.45723
+    model_sum_jy: 3.53963
+    model_negative_absolute_fraction: 0.24879
+    residual_rms_mjy_per_beam: 0.73668
+    residual_one_beam_correlation_xy: [0.85173, 0.89898]
+    divergence_warnings: 0
+  conclusion:
+    status: no_variant_supports_a_stronger_scientific_product
+    regression_baseline: fixed_broad
+    scientifically_preferred_variant: null
+    publication_claim_supported: false
 interpretation:
   status: reproducible_course_baseline
   known_failure_mode: Fixed broad mask can admit negative or divergent large-scale minor cycles

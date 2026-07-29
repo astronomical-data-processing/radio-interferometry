@@ -7,6 +7,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
+import numpy as np
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -23,6 +24,7 @@ def load_module(name):
 DOWNLOAD = load_module("download_data")
 PIPELINE = load_module("run_casa_pipeline")
 AUDIT = load_module("audit_results")
+SENSITIVITY = load_module("run_imaging_sensitivity")
 
 
 class VLA3C391ArchiveLabTests(unittest.TestCase):
@@ -87,6 +89,36 @@ class VLA3C391ArchiveLabTests(unittest.TestCase):
         self.assertEqual(parameters["reference_antenna"], "ea21")
         self.assertEqual(parameters["target_fields"], "2~8")
         self.assertEqual(parameters["imaging"]["gridder"], "mosaic")
+
+    def test_sensitivity_study_is_controlled(self):
+        common = SENSITIVITY.common_parameters()
+        reference = PIPELINE.pipeline_parameters()["imaging"]
+        self.assertEqual(common["gridder"], reference["gridder"])
+        self.assertEqual(common["imsize"], reference["imsize"])
+        self.assertEqual(common["cell"], reference["cell"])
+        self.assertEqual(common["weighting"], reference["weighting"])
+        self.assertEqual(common["robust"], reference["robust"])
+        self.assertEqual(common["scales"], reference["scales"])
+        self.assertEqual(common["threshold"], reference["threshold"])
+        self.assertEqual(
+            set(SENSITIVITY.VARIANTS),
+            {
+                "fixed_broad",
+                "fixed_tight",
+                "auto_conservative",
+                "fixed_broad_restricted_scales",
+            },
+        )
+
+    def test_sensitivity_metrics_detect_negative_model_and_correlation(self):
+        values = np.arange(25, dtype=float).reshape(5, 5)
+        valid = np.ones_like(values, dtype=bool)
+        model = SENSITIVITY.model_metrics(values - 12, valid)
+        residual = SENSITIVITY.residual_metrics(values, valid, beam_pixels=2)
+        self.assertEqual(model["sum_jy"], 0.0)
+        self.assertEqual(model["negative_pixels"], 12)
+        self.assertAlmostEqual(residual["lag_correlation"]["one_pixel_x"], 1.0)
+        self.assertAlmostEqual(residual["lag_correlation"]["one_pixel_y"], 1.0)
 
     def test_perley_butler_flux_checkpoints(self):
         reference = AUDIT.load_reference()
@@ -158,6 +190,23 @@ class VLA3C391ArchiveLabTests(unittest.TestCase):
         }
         checks = AUDIT.audit_imaging(summary, reference)
         self.assertTrue(all(check["passed"] for check in checks))
+
+    def test_sensitivity_reference_preserves_failure_boundary(self):
+        sensitivity = AUDIT.load_reference()["imaging_sensitivity"]
+        conclusion = sensitivity["conclusion"]
+        self.assertEqual(conclusion["regression_baseline"], "fixed_broad")
+        self.assertIsNone(conclusion["scientifically_preferred_variant"])
+        self.assertFalse(conclusion["publication_claim_supported"])
+        self.assertEqual(
+            sensitivity["fixed_broad_restricted_scales"]["divergence_warnings"],
+            0,
+        )
+        self.assertGreater(
+            sensitivity["fixed_broad_restricted_scales"][
+                "residual_one_beam_correlation_xy"
+            ][0],
+            sensitivity["fixed_broad"]["residual_one_beam_correlation_xy"][0],
+        )
 
 
 if __name__ == "__main__":
