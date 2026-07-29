@@ -61,7 +61,7 @@
 - 宽带宽场算法边界：`MT-MFS`、主波束谱指数偏差、`w-term`、`A/AW-projection` 与方向相关校准
 - 观测设计与归档数据再分析：科学目标、频谱设置、校准节奏、`QA`、`weblog` 与 provenance
 - 软件生态与可复现实践：CASA、WSClean、DP3/DDFacet、CARTA、PyBDSF、SoFiA、Astropy 生态与 provenance
-- VLBI 实践入口：延迟模型、`fringe fitting`、相位参考、SEFD 定标、天体测量与紧致源成像
+- VLBI 实践入口：延迟模型、`fringe fitting`、相位参考、SEFD 校准、天体测量与紧致源成像
 - 低频与高频特殊观测体制：电离层、RFI、宽场 DDE、对流层相干时间、opacity、`Tsys` 与快速相位校准
 - Pipeline QA、`weblog` 与再处理决策：自动产品证据判读、归档数据重成像/重校准分支与 provenance
 - 最小可复现处理项目：项目目录模板、配置文件、依赖图、数据/软件/处理身份、验证门与连续谱再处理案例
