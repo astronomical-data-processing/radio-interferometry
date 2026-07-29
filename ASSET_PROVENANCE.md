@@ -26,7 +26,7 @@
 
 第 1.6 节原有 Cygnus A 射电瓣/热点谱 PNG 已改为 Notebook 内的可执行数据表和绘图。六个频点的 `L` 射电瓣、`L1` 热点通量逐项来自 Steenbrugge, Heywood & Blundell (2010), MNRAS 401, 67-76, Table 1, DOI `10.1111/j.1365-2966.2009.15663.x`；代码只做未加权描述性幂律拟合，并明确说明低频曲率、通量协方差和跨数据集系统误差边界。
 
-第 5.1、5.2 节原来作为 Fourier 变换输入的野鸭照片和 Boccioni 绘画也已删除，改用 [fourier_input_figures.py](5_Imaging/figures/fourier_input_figures.py) 生成的合成射电天线场景和旋涡星系。替代输入保留了轮廓、直线边缘、平滑背景、旋臂和小尺度结点等教学所需频率结构，同时不再依赖外部作品。
+第 5.1、5.2 节原来作为 Fourier 变换输入的野鸭照片和 Boccioni 绘画也已删除，改用 [fourier_input_figures.py](5_Imaging/figures/fourier_input_figures.py) 生成的合成射电天线场景、旋涡星系和幅相交换图。替代输入保留了轮廓、直线边缘、平滑背景、旋臂和小尺度结点等教学所需频率结构，同时不再依赖外部作品。
 
 这批 P0 替换消除了上述章节中仅有署名、没有明确再分发许可的图片。后续仍应在新增或发现其他第三方资产时逐项审核，不能把本次清理理解为对未来素材的自动授权。
 

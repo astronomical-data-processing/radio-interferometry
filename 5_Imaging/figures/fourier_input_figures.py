@@ -1,4 +1,4 @@
-"""Generate original image inputs for the spatial-frequency examples."""
+"""Generate the original image inputs and amplitude-phase comparison."""
 
 from pathlib import Path
 
@@ -30,13 +30,15 @@ def radio_dish_scene():
     image[reflector | mast | support] = 0.95
     image[feed] = 0.55
     image[ground] = 0.35
+    image = normalized(image)
     plt.imsave(
         FIGURE_DIR / "synthetic_radio_dish_scene.png",
-        normalized(image),
+        image,
         cmap="gray",
         vmin=0,
         vmax=1,
     )
+    return image
 
 
 def spiral_galaxy():
@@ -58,18 +60,56 @@ def spiral_galaxy():
         y0 = radius_knot * np.sin(theta)
         image += strength * np.exp(-((x - x0) ** 2 + (y - y0) ** 2) / 0.0008)
     image += rng.normal(0, 0.012, image.shape)
+    image = normalized(image)
     plt.imsave(
         FIGURE_DIR / "synthetic_spiral_galaxy.png",
-        normalized(image),
+        image,
         cmap="gray",
         vmin=0,
         vmax=1,
     )
+    return image
+
+
+def amplitude_phase_comparison(dish, galaxy):
+    fft_dish = np.fft.fftshift(np.fft.fft2(dish))
+    fft_galaxy = np.fft.fftshift(np.fft.fft2(galaxy))
+    amp_dish, phase_dish = np.abs(fft_dish), np.angle(fft_dish)
+    amp_galaxy, phase_galaxy = np.abs(fft_galaxy), np.angle(fft_galaxy)
+
+    items = [
+        (
+            "phase: galaxy, amplitude: dish",
+            np.fft.ifft2(np.fft.ifftshift(amp_dish * np.exp(1j * phase_galaxy))).real,
+        ),
+        (
+            "phase: dish, amplitude: galaxy",
+            np.fft.ifft2(np.fft.ifftshift(amp_galaxy * np.exp(1j * phase_dish))).real,
+        ),
+        (
+            "galaxy reconstructed from phase only",
+            np.fft.ifft2(np.fft.ifftshift(np.exp(1j * phase_galaxy))).real,
+        ),
+        (
+            "galaxy reconstructed from amplitude only",
+            np.fft.fftshift(np.fft.ifft2(np.fft.ifftshift(amp_galaxy))).real,
+        ),
+    ]
+
+    fig, axes = plt.subplots(2, 2, figsize=(10.5, 10.0))
+    for ax, (title, image) in zip(axes.flat, items):
+        ax.imshow(image, cmap="gray")
+        ax.set_title(title)
+        ax.set_axis_off()
+    fig.tight_layout()
+    fig.savefig(FIGURE_DIR / "phase_amplitude_role.png", dpi=180, bbox_inches="tight")
+    plt.close(fig)
 
 
 def main():
-    radio_dish_scene()
-    spiral_galaxy()
+    dish = radio_dish_scene()
+    galaxy = spiral_galaxy()
+    amplitude_phase_comparison(dish, galaxy)
 
 
 if __name__ == "__main__":
