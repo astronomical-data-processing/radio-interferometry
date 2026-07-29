@@ -76,6 +76,39 @@ class CalibrationSolverTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "connect every antenna"):
             calibration.solve_gains(data, model, weights=weights)
 
+    def test_nonconverged_solution_is_rejected(self):
+        sample = calibration.generate_synthetic_data(n_times=1, noise_std=0.0)
+        with self.assertRaisesRegex(RuntimeError, "did not converge"):
+            calibration.solve_gains(
+                sample["data"],
+                sample["model"],
+                max_iterations=1,
+                tolerance=1e-15,
+            )
+
+    def test_diagnostics_report_holdout_and_reference_invariance(self):
+        sample = calibration.generate_synthetic_data()
+        fit_weights = np.ones(sample["data"].shape)
+        validation_weights = np.zeros(sample["data"].shape)
+        fit_weights[:, 0, 1] = fit_weights[:, 1, 0] = 0.0
+        validation_weights[:, 0, 1] = validation_weights[:, 1, 0] = 1.0
+
+        gains, metrics = calibration.calibration_diagnostics(
+            sample["data"],
+            sample["model"],
+            fit_weights=fit_weights,
+            validation_weights=validation_weights,
+            reference=0,
+            comparison_reference=2,
+        )
+
+        self.assertEqual(gains.shape, sample["true_gains"].shape)
+        self.assertLess(metrics["fit_rms_after"], metrics["fit_rms_before"])
+        self.assertLess(
+            metrics["validation_rms_after"], metrics["validation_rms_before"]
+        )
+        self.assertLess(metrics["reference_rms_difference"], 1e-8)
+
     def test_weighted_rms_ignores_flagged_nonfinite_values(self):
         model = np.ones((3, 3), dtype=complex)
         data = model.copy()

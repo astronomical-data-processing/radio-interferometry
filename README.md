@@ -26,7 +26,7 @@
 - `5_Imaging`：成像、权重、网格化、宽场效应与成像参数选择；另有[综合问题集](5_Imaging/5_problem_set.ipynb)。
 - `6_Deconvolution`：去卷积、CLEAN、残差、图像质量、源搜索、正则化与目录选择函数；另有[100 分综合问题集](6_Deconvolution/6_problem_set.ipynb)。
 - `7_Observing_Systems`：RIME、主波束、极化、传播效应、RFI、系统温度、SEFD、观测日志与 QA；另有[定量问题集](7_Observing_Systems/7_problem_set.ipynb)。
-- `8_Calibration`：1GC、2GC、3GC、校准退化、模型不完备与解可信度；[校准习题](8_Calibration/8_problem_set.ipynb)包含可执行增益求解实验。
+- `8_Calibration`：方向无关外场校准、方向无关自校准、方向相关校准、退化、模型不完备与解可信度；[校准习题](8_Calibration/8_problem_set.ipynb)包含可执行增益求解和留出诊断实验。
 
 ### 第二册：[《射电干涉数据处理实践》](9_Practical/9_0_introduction.ipynb)
 

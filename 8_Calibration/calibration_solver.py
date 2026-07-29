@@ -171,6 +171,8 @@ def solve_gains(
         gains *= np.exp(-1j * np.angle(gains[..., reference]))[..., None]
         if np.max(abs(gains - previous)) < tolerance:
             break
+    else:
+        raise RuntimeError("gain solver did not converge")
     return gains
 
 
@@ -215,6 +217,59 @@ def rms_residual(data, model, weights=None):
     if not np.isfinite(residual_squared[valid]).all():
         raise ValueError("unflagged residuals must be finite")
     return float(np.sqrt(np.sum(pair_weights[valid] * residual_squared[valid]) / total_weight))
+
+
+def calibration_diagnostics(
+    data,
+    model,
+    fit_weights=None,
+    validation_weights=None,
+    reference=0,
+    comparison_reference=None,
+    **solver_options,
+):
+    """Fit gains and report training, validation, and gauge-invariance RMS.
+
+    For a true holdout test, samples selected by ``validation_weights`` must
+    have zero ``fit_weights``. The returned gains use ``reference``.
+    """
+    gains = solve_gains(
+        data,
+        model,
+        weights=fit_weights,
+        reference=reference,
+        **solver_options,
+    )
+    corrected = correct_visibilities(data, gains)
+    metrics = {
+        "fit_rms_before": rms_residual(data, model, fit_weights),
+        "fit_rms_after": rms_residual(corrected, model, fit_weights),
+    }
+
+    if validation_weights is not None:
+        metrics["validation_rms_before"] = rms_residual(
+            data, model, validation_weights
+        )
+        metrics["validation_rms_after"] = rms_residual(
+            corrected, model, validation_weights
+        )
+
+    if comparison_reference is not None:
+        if comparison_reference == reference:
+            raise ValueError("comparison_reference must differ from reference")
+        comparison_gains = solve_gains(
+            data,
+            model,
+            weights=fit_weights,
+            reference=comparison_reference,
+            **solver_options,
+        )
+        comparison_corrected = correct_visibilities(data, comparison_gains)
+        metrics["reference_rms_difference"] = rms_residual(
+            corrected, comparison_corrected
+        )
+
+    return gains, metrics
 
 
 def generate_synthetic_data(n_times=64, noise_std=0.02, seed=7):
