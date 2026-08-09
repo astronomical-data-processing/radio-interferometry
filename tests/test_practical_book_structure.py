@@ -16,7 +16,7 @@ TYPE_LABELS = {
     "reference": "参考",
     "project": "项目",
 }
-LEVEL_LABELS = {"core": "核心", "advanced": "进阶", "course": "课程"}
+LEVEL_LABELS = {"core": "核心", "advanced": "提高", "course": "课程"}
 
 
 def load_manifest():

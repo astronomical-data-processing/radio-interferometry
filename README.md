@@ -19,7 +19,7 @@
 
 ### 第一册：《射电干涉孔径合成基础》
 
-- `1_Radio_Science`：射电科学、辐射传输与机制、谱线、单碟/阵列尺度及定量问题集。
+- `1_Radio_Science`：射电科学、辐射转移与机制、谱线、单碟/阵列尺度及定量问题集。
 - `2_Mathematical_Groundwork`：傅里叶、采样、卷积、最小二乘、复数统计、正则化、一维 CLEAN、综合练习与 FFT 作业。
 - `3_Positional_Astronomy`：位置天文学、坐标系统、时间标准、参考系与精密天体测量边界；另有[定量问题集](3_Positional_Astronomy/3_problem_set.ipynb)。
 - `4_Visibility_Space`：基线、可见度、UV 覆盖、van Cittert-Zernike 定理、闭合量、缺短间距与 mosaicking；另有[100 分综合问题集](4_Visibility_Space/4_problem_set.ipynb)。
@@ -120,7 +120,7 @@ python3 -m jupyter lab
 
 ## 数据文件说明
 
-默认教材路径不依赖外部大文件：当前 71 本含实际代码的 Notebook 均纳入 Python 3.10 和 3.13 基础环境回归。9.39 的 3C391 原始 MS 只在课程扩展运行时按固定 URL、长度和 SHA-256 下载，不进入 Git。旧 Högbom 和 Clark CLEAN 页面会优先读取用户提供的历史 FITS 图像；文件不存在时，自动使用固定随机种子的合成脏图和 PSF。
+默认教材路径不依赖外部大文件：当前 69 本含实际代码的 Notebook 均纳入 Python 3.10 和 3.13 基础环境回归。9.39 的 3C391 原始 MS 只在课程扩展运行时按固定 URL、长度和 SHA-256 下载，不进入 Git。旧 Högbom 和 Clark CLEAN 页面会优先读取用户提供的历史 FITS 图像；文件不存在时，自动使用固定随机种子的合成脏图和 PSF。
 
 原项目的两个 Dropbox 归档地址已经失效，因此不再由 `Makefile` 自动下载。`data/scripts/` 下的 WSClean、Tigger 和 Measurement Set 脚本仍作为历史工具入口保留，运行它们需要用户自行准备对应数据并安装外部射电软件；这些工具不属于默认 Notebook 回归范围。
 
@@ -144,10 +144,7 @@ Notebook 回归会把仓库复制到临时目录，并为每本 Notebook 启动�
 
 ## 维护与扩展
 
-如果后续继续扩展本项目，建议先阅读以下文档：
-
-- [Roadmap.md](Roadmap.md)：全书后续补强方向。
-- [0_Introduction/editing_guide.ipynb](0_Introduction/editing_guide.ipynb)：编辑参考。
+如果后续继续扩展本项目，建议先阅读 [Roadmap.md](Roadmap.md)，了解全书后续补强方向。
 
 与当前仓库状态直接相关的维护约定包括：
 
@@ -155,11 +152,6 @@ Notebook 回归会把仓库复制到临时目录，并为每本 Notebook 启动�
 - 优先保证 notebook 自包含、可执行、适合作为教学材料阅读。
 - 实践页优先解释“这一步解决什么问题”，而不是简单堆命令。
 - 程序、脚本、notebook 和文档中不要写死个人机器上的绝对路径，例如 `/home/username/...`。
-
-## 风格与编辑入口
-
-- [0_Introduction/0_introduction.ipynb](0_Introduction/0_introduction.ipynb)：总目录与结构入口。
-- [0_Introduction/editing_guide.ipynb](0_Introduction/editing_guide.ipynb)：编辑参考。
 
 ## 致谢
 
