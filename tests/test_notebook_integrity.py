@@ -20,7 +20,6 @@ TEXT_EXTENSIONS = {
     ".tex", ".toml", ".txt", ".yaml", ".yml",
 }
 COMPATIBILITY_NOTEBOOKS = {
-    ROOT / "8_Calibration/8_x_further_reading_and_references.ipynb",
     ROOT / "9_Practical/9_3_Observing_smearing.ipynb",
     ROOT / "9_Practical/pimaging.ipynb",
 }
